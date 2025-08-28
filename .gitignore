@@ -1,0 +1,12 @@
+# Executables
+*.exe
+
+# VSCODE
+.vscode/
+
+# Other
+*.bin
+*.log
+/backups
+*/build
+build
