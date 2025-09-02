@@ -1,7 +1,7 @@
 #ifndef CASCADE_CASCADE_H
 #define CASCADE_CASCADE_H
 
-#include "entt.hpp"
+#include "../external/entt/entt.hpp"
 #include "system.hpp"
 #include "inputs.hpp"
 
@@ -11,7 +11,7 @@ class Cascade
 {
 public:
   Cascade();
-  ~Cascade() {};
+  ~Cascade(){};
 
   entt::entity CreateEntity();
   void DestroyEntity(entt::entity entity);
