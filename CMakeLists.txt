@@ -2,16 +2,16 @@ cmake_minimum_required(VERSION 3.25.1)
 
 project(Cascade)
 
-add_library(Cascade src/cascade.cpp)
+add_library(Cascade ${CMAKE_CURRENT_SOURCE_DIR}/src/cascade.cpp)
 
-add_subdirectory(external/SDL)
-add_subdirectory(external/SDL_image)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)
 
 target_include_directories(Cascade PUBLIC 
-"include"
-"external/entt.hpp"
-"external/SDL/include/SDL3"
-"external/SDL_image/include/SDL3_image")
+"${CMAKE_CURRENT_SOURCE_DIR}/include"
+"${CMAKE_CURRENT_SOURCE_DIR}/external/entt.hpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/include/SDL3"
+"${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image/include/SDL3_image")
 
 target_link_libraries(Cascade PRIVATE
 SDL3::SDL3
