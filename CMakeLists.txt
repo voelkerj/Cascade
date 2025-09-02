@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.25.1)
 
 project(Cascade)
 
-add_library(Cascade ${CMAKE_CURRENT_SOURCE_DIR}/src/cascade.cpp)
+add_library(Cascade 
+${CMAKE_CURRENT_SOURCE_DIR}/src/cascade.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/inputs.cpp)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)
