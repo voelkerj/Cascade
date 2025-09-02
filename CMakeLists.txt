@@ -10,6 +10,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)
 target_include_directories(Cascade PUBLIC 
 "${CMAKE_CURRENT_SOURCE_DIR}/include"
 "${CMAKE_CURRENT_SOURCE_DIR}/external/entt.hpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/include"
 "${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/include/SDL3"
 "${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image/include/SDL3_image")
 
