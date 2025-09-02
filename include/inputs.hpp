@@ -3,7 +3,7 @@
 
 #include <map>
 
-#include "SDL.h"
+#include "../external/SDL/include/SDL3/SDL.h"
 
 class Inputs
 {
