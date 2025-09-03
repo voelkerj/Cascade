@@ -16,7 +16,7 @@ target_include_directories(Cascade PUBLIC
 "${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/include/SDL3"
 "${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image/include/SDL3_image")
 
-target_link_libraries(Cascade PRIVATE
+target_link_libraries(Cascade PUBLIC
 SDL3::SDL3
 SDL3_image::SDL3_image 
 )
