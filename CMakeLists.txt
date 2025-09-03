@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25.1)
 
 project(Cascade)
 
-add_library(Cascade 
+add_library(Cascade SHARED
 ${CMAKE_CURRENT_SOURCE_DIR}/src/cascade.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/inputs.cpp)
 
