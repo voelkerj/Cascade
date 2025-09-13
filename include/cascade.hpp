@@ -16,6 +16,10 @@ public:
   entt::entity CreateEntity();
   void DestroyEntity(entt::entity entity);
 
+  template <typename T> void AddComponent(entt::entity entity, T component_data);
+
+  template <typename T> void RemoveComponent(entt::entity entity);
+
   void StartFrame();
   void EndFrame();
 
