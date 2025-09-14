@@ -52,16 +52,6 @@ void Cascade::DestroyEntity(entt::entity entity)
   m_entt_registry.destroy(entity);
 }
 
-template <typename T> void Cascade::AddComponent(entt::entity entity, T component_data)
-{
-  m_entt_registry.emplace<T>(entity, component_data);
-}
-
-template <typename T> void Cascade::RemoveComponent(entt::entity entity)
-{
-  m_entt_registry.remove<T>(entity);
-}
-
 void Cascade::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
 {
   SDL_Texture* sprite_sheet = IMG_LoadTexture(m_renderer, sheet_path.c_str());

@@ -46,8 +46,11 @@ public:
   entt::entity CreateEntity();
   void DestroyEntity(entt::entity entity);
 
-  template <typename T> void AddComponent(entt::entity entity, T component_data);
-  template <typename T> void RemoveComponent(entt::entity entity);
+  template <typename T> void AddComponent(entt::entity entity, T component_data)
+  {m_entt_registry.emplace<T>(entity, component_data);}
+  
+  template <typename T> void RemoveComponent(entt::entity entity)
+  {m_entt_registry.remove<T>(entity);}
 
   void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
   void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
