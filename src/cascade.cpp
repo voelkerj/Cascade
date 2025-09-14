@@ -10,15 +10,17 @@ Cascade::Cascade()
 
   // Initialize Window
   m_window = SDL_CreateWindow("Cascade", 0, 0, SDL_WINDOW_FULLSCREEN);
-  if (m_window == nullptr) {
-    std::cout << SDL_GetError() << std::endl;
+  if (m_window == nullptr)
+  {
+    std::cerr << SDL_GetError() << std::endl;
     exit(1);
   }
 
   // Initialize Renderer
   m_renderer = SDL_CreateRenderer(m_window, NULL);
-  if (m_renderer == nullptr) {
-    std::cout << SDL_GetError() << std::endl;
+  if (m_renderer == nullptr)
+  {
+    std::cerr << SDL_GetError() << std::endl;
     exit(1);
   }
 
@@ -38,7 +40,8 @@ Cascade::Cascade()
   m_scale[1] = m_window_size[1] / m_camera.FOV[1];
 }
 
-Cascade::~Cascade() {
+Cascade::~Cascade()
+{
   SDL_DestroyWindow(m_window);
 }
 
@@ -54,14 +57,15 @@ void Cascade::DestroyEntity(entt::entity entity)
 
 void Cascade::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
 {
-  SDL_Texture* sprite_sheet = IMG_LoadTexture(m_renderer, sheet_path.c_str());
+  SDL_Texture *sprite_sheet = IMG_LoadTexture(m_renderer, sheet_path.c_str());
 
-  if (!sprite_sheet) {
-    std::cout << "Failed to load file " << sheet_path << "\n";
+  if (!sprite_sheet)
+  {
+    std::cerr << "Failed to load file " << sheet_path << "\n";
     exit(1);
   }
 
-  SDL_SetTextureScaleMode(sprite_sheet, SDL_SCALEMODE_NEAREST);  // use nearest pixel scaling
+  SDL_SetTextureScaleMode(sprite_sheet, SDL_SCALEMODE_NEAREST); // use nearest pixel scaling
 
   m_sprite_sheets.emplace(sheet_name, sprite_sheet);
 }
@@ -86,6 +90,34 @@ void Cascade::AddFrame(std::string animation_name, int x, int y, int w, int h)
   m_animations[animation_name].frames.push_back(frame);
 }
 
+void Cascade::AddAnimation(entt::entity entity, std::string animation_name)
+{
+  AnimationInstance new_animation;
+  new_animation.animation_name = animation_name;
+
+  if (EntityAnimations *entity_animations = m_entt_registry.try_get<EntityAnimations>(entity))
+  {
+    entity_animations->animations.push_back(new_animation);
+    return;
+  }
+
+  EntityAnimations entity_animations;
+  entity_animations.animations.push_back(new_animation);
+
+  AddComponent(entity, entity_animations);
+}
+
+void Cascade::SetCurrentAnimation(entt::entity entity, std::string animation_name)
+{
+  if (EntityAnimations *entity_animations = m_entt_registry.try_get<EntityAnimations>(entity))
+  {
+    entity_animations->current_animation = animation_name;
+  } else {
+    std::cerr << "Cannot set current animation, entity has no animations!\n";
+    exit(1);
+  }
+}
+
 void Cascade::StartFrame()
 {
   m_frame_start_ticks = SDL_GetTicks();
@@ -107,7 +139,8 @@ void Cascade::EnforceFPS()
 
   float elapsed_time = (m_frame_end_ticks - m_frame_start_ticks) / 1000;
 
-  if (elapsed_time < (1.0 / m_fps)) {
+  if (elapsed_time < (1.0 / m_fps))
+  {
     SDL_Delay((1.0 / m_fps) - elapsed_time);
     elapsed_time = 1.0 / m_fps;
   }

@@ -32,9 +32,14 @@ struct Animation {
 
 // Per-entity animation state
 struct AnimationInstance {
-  std::string animation_name; // ID to look up the AnimationData
+  std::string animation_name; // string to look up the Animation
   int frame_idx{0};
   Uint32 prev_update_ticks{0};
+};
+
+struct EntityAnimations {
+  std::vector<AnimationInstance> animations;
+  std::string current_animation;
 };
 
 class Cascade
@@ -48,13 +53,15 @@ public:
 
   template <typename T> void AddComponent(entt::entity entity, T component_data)
   {m_entt_registry.emplace<T>(entity, component_data);}
-  
+
   template <typename T> void RemoveComponent(entt::entity entity)
   {m_entt_registry.remove<T>(entity);}
 
   void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
   void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
   void AddFrame(std::string animation_name, int x, int y, int w, int h);
+  void AddAnimation(entt::entity entity, std::string animation_name);
+  void SetCurrentAnimation(entt::entity entity, std::string animation_name);
 
   void StartFrame();
   void EndFrame();
