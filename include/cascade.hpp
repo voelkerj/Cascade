@@ -6,41 +6,6 @@
 #include "inputs.hpp"
 
 #include "../external/SDL/include/SDL3/SDL.h"
-#include "../external/SDL_image/include/SDL3_image/SDL_image.h"
-
-struct Camera {
-  // X & Y Position of Camera's origin point (center of screen)
-  float pos[2];
-
-  float zoom{1}; // Camera zoom factor. Ratio of pixels per world unit.
-
-  // Width & Height of the Camera's projected FOV in WCS
-  float FOV[2];
-
-  float screen_top_y;
-  float screen_bottom_y;
-  float screen_left_x;
-  float screen_right_x;
-};
-
-// Shared, read-only animation definition
-struct Animation {
-  int update_interval; // milliseconds
-  std::vector<SDL_FRect> frames;
-  std::string sprite_sheet;
-};
-
-// Per-entity animation state
-struct AnimationInstance {
-  std::string animation_name; // string to look up the Animation
-  int frame_idx{0};
-  Uint32 prev_update_ticks{0};
-};
-
-struct EntityAnimations {
-  std::vector<AnimationInstance> animations;
-  std::string current_animation;
-};
 
 class Cascade
 {
@@ -51,39 +16,56 @@ public:
   entt::entity CreateEntity();
   void DestroyEntity(entt::entity entity);
 
-  template <typename T> void AddComponent(entt::entity entity, T component_data)
-  {m_entt_registry.emplace<T>(entity, component_data);}
+  template <typename T>
+  void AddComponent(entt::entity entity, T component_data)
+  {
+    m_entt_registry.emplace<T>(entity, component_data);
+  }
 
-  template <typename T> void RemoveComponent(entt::entity entity)
-  {m_entt_registry.remove<T>(entity);}
+  template <typename T>
+  void RemoveComponent(entt::entity entity)
+  {
+    m_entt_registry.remove<T>(entity);
+  }
+
+  template <typename T, typename... Args>
+  void AddSystem(std::string system_name, Args... args)
+  {
+    if (std::is_base_of<System, T>::value)
+    {
+      std::cerr << system_name << " must derive from System class.\n";
+      exit(1);
+    }
+
+    m_systems.emplace(system_name, std::make_unique<T>(std::forward<Args>(args)...));
+  }
+
+  template <typename T>
+  T *GetSystem(std::string system_name)
+  {
+    return m_systems[system_name].get();
+  }
 
   void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
   void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
   void AddFrame(std::string animation_name, int x, int y, int w, int h);
-  void AddAnimation(entt::entity entity, std::string animation_name);
   void SetCurrentAnimation(entt::entity entity, std::string animation_name);
 
   void StartFrame();
   void EndFrame();
 
   void UpdateInputEvents();
+  bool WasPressed(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };
+  bool WasReleased(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };
+  bool IsHeld(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };
 
 private:
   // ECS
   entt::registry m_entt_registry;
-  std::vector<System> m_systems;
+  std::map<std::string, std::unique_ptr<System>> m_systems;
 
   // SDL Stuff
   std::string m_base_path;
-  SDL_Window* m_window;
-  int m_window_size[2]; // Width & Height
-  SDL_Renderer* m_renderer;
-
-  // Graphics
-  Camera m_camera;
-  float m_scale[2]; // X & Y scale
-  std::map<std::string, SDL_Texture*> m_sprite_sheets;
-  std::unordered_map<std::string, Animation> m_animations;
 
   // Frames
   int m_fps{60};

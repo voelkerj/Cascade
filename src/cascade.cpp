@@ -8,42 +8,11 @@ Cascade::Cascade()
   SDL_Init(SDL_INIT_VIDEO);
   m_base_path = SDL_GetBasePath();
 
-  // Initialize Window
-  m_window = SDL_CreateWindow("Cascade", 0, 0, SDL_WINDOW_FULLSCREEN);
-  if (m_window == nullptr)
-  {
-    std::cerr << SDL_GetError() << std::endl;
-    exit(1);
-  }
-
-  // Initialize Renderer
-  m_renderer = SDL_CreateRenderer(m_window, NULL);
-  if (m_renderer == nullptr)
-  {
-    std::cerr << SDL_GetError() << std::endl;
-    exit(1);
-  }
-
-  SDL_SetRenderDrawColor(m_renderer, 0x26, 0x26, 0x26, 0xFF);
-
-  // Initialize Camera
-  SDL_GetWindowSize(m_window, &m_window_size[0], &m_window_size[1]);
-  int screen_width, screen_height;
-  SDL_GetCurrentRenderOutputSize(m_renderer, &screen_width, &screen_height);
-
-  m_camera.pos[0] = 0;
-  m_camera.pos[1] = 0;
-  m_camera.FOV[0] = screen_width / m_camera.zoom;
-  m_camera.FOV[1] = screen_height / m_camera.zoom;
-
-  m_scale[0] = m_window_size[0] / m_camera.FOV[0];
-  m_scale[1] = m_window_size[1] / m_camera.FOV[1];
+  Graphics graphics;
+  AddSystem<Graphics>("graphics", graphics);
 }
 
-Cascade::~Cascade()
-{
-  SDL_DestroyWindow(m_window);
-}
+Cascade::~Cascade(){}
 
 entt::entity Cascade::CreateEntity()
 {
@@ -57,65 +26,22 @@ void Cascade::DestroyEntity(entt::entity entity)
 
 void Cascade::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
 {
-  SDL_Texture *sprite_sheet = IMG_LoadTexture(m_renderer, sheet_path.c_str());
-
-  if (!sprite_sheet)
-  {
-    std::cerr << "Failed to load file " << sheet_path << "\n";
-    exit(1);
-  }
-
-  SDL_SetTextureScaleMode(sprite_sheet, SDL_SCALEMODE_NEAREST); // use nearest pixel scaling
-
-  m_sprite_sheets.emplace(sheet_name, sprite_sheet);
+  GetSystem<Graphics>("graphics")->LoadSpriteSheet(sheet_name, sheet_path);
 }
 
 void Cascade::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
 {
-  Animation new_animation;
-  new_animation.sprite_sheet = sheet_name;
-  new_animation.update_interval = update_interval;
-
-  m_animations.emplace(animation_name, new_animation);
+  GetSystem<Graphics>("graphics")->CreateAnimation(animation_name, sheet_name, update_interval);
 }
 
 void Cascade::AddFrame(std::string animation_name, int x, int y, int w, int h)
 {
-  SDL_FRect frame;
-  frame.x = x;
-  frame.y = y;
-  frame.w = w;
-  frame.h = h;
-
-  m_animations[animation_name].frames.push_back(frame);
-}
-
-void Cascade::AddAnimation(entt::entity entity, std::string animation_name)
-{
-  AnimationInstance new_animation;
-  new_animation.animation_name = animation_name;
-
-  if (EntityAnimations *entity_animations = m_entt_registry.try_get<EntityAnimations>(entity))
-  {
-    entity_animations->animations.push_back(new_animation);
-    return;
-  }
-
-  EntityAnimations entity_animations;
-  entity_animations.animations.push_back(new_animation);
-
-  AddComponent(entity, entity_animations);
+  GetSystem<Graphics>("graphics")->AddFrame(animation_name, x, y, w, h);
 }
 
 void Cascade::SetCurrentAnimation(entt::entity entity, std::string animation_name)
 {
-  if (EntityAnimations *entity_animations = m_entt_registry.try_get<EntityAnimations>(entity))
-  {
-    entity_animations->current_animation = animation_name;
-  } else {
-    std::cerr << "Cannot set current animation, entity has no animations!\n";
-    exit(1);
-  }
+  m_entt_registry.emplace<CurrentAnimation>(entity, animation_name);
 }
 
 void Cascade::StartFrame()
@@ -123,13 +49,17 @@ void Cascade::StartFrame()
   m_frame_start_ticks = SDL_GetTicks();
 
   m_inputs.StartFrame();
-  // graphics start frame
   UpdateInputEvents();
 }
 
 void Cascade::EndFrame()
 {
-  // update all systems
+  // Update all systems
+  for (const auto& pair : m_systems)
+  {
+    pair.second->Update(m_entt_registry);
+  }
+
   EnforceFPS();
 }
 

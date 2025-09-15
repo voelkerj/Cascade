@@ -4,7 +4,8 @@ project(Cascade)
 
 add_library(Cascade STATIC
 ${CMAKE_CURRENT_SOURCE_DIR}/src/cascade.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/inputs.cpp)
+${CMAKE_CURRENT_SOURCE_DIR}/src/inputs.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/system.cpp)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)

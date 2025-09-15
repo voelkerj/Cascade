@@ -1,0 +1,112 @@
+#include <iostream>
+
+#include "../include/system.hpp"
+
+struct State;
+
+Graphics::Graphics()
+{
+  // Initialize Window
+  m_window = SDL_CreateWindow("Cascade", 0, 0, SDL_WINDOW_FULLSCREEN);
+  if (m_window == nullptr)
+  {
+    std::cerr << SDL_GetError() << std::endl;
+    exit(1);
+  }
+
+  // Initialize Renderer
+  m_renderer = SDL_CreateRenderer(m_window, NULL);
+  if (m_renderer == nullptr)
+  {
+    std::cerr << SDL_GetError() << std::endl;
+    exit(1);
+  }
+
+  SDL_SetRenderDrawColor(m_renderer, 0x26, 0x26, 0x26, 0xFF);
+
+  // Initialize Camera
+  SDL_GetWindowSize(m_window, &m_window_size[0], &m_window_size[1]);
+  int screen_width, screen_height;
+  SDL_GetCurrentRenderOutputSize(m_renderer, &screen_width, &screen_height);
+
+  m_camera.pos[0] = 0;
+  m_camera.pos[1] = 0;
+  m_camera.FOV[0] = screen_width / m_camera.zoom;
+  m_camera.FOV[1] = screen_height / m_camera.zoom;
+
+  m_scale[0] = m_window_size[0] / m_camera.FOV[0];
+  m_scale[1] = m_window_size[1] / m_camera.FOV[1];
+}
+
+Graphics::~Graphics()
+{
+  SDL_DestroyWindow(m_window);
+}
+
+void Graphics::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
+{
+  SDL_Texture *sprite_sheet = IMG_LoadTexture(m_renderer, sheet_path.c_str());
+
+  if (!sprite_sheet)
+  {
+    std::cerr << "Failed to load file " << sheet_path << "\n";
+    exit(1);
+  }
+
+  SDL_SetTextureScaleMode(sprite_sheet, SDL_SCALEMODE_NEAREST); // use nearest pixel scaling
+
+  m_sprite_sheets.emplace(sheet_name, sprite_sheet);
+}
+
+void Graphics::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
+{
+  Animation new_animation;
+  new_animation.sprite_sheet = sheet_name;
+  new_animation.update_interval = update_interval;
+
+  m_animations.emplace(animation_name, new_animation);
+}
+
+void Graphics::AddFrame(std::string animation_name, int x, int y, int w, int h)
+{
+  SDL_FRect frame;
+  frame.x = x;
+  frame.y = y;
+  frame.w = w;
+  frame.h = h;
+
+  m_animations[animation_name].frames.push_back(frame);
+}
+
+void Graphics::Update(entt::registry &registry)
+{
+  DrawEntities(registry);
+}
+
+void Graphics::DrawEntities(entt::registry &registry)
+{
+  auto view = registry.view<CurrentAnimation, const State>();
+
+  view.each([](auto &current_animation, const auto &state)
+            { 
+              // Get frame index based on elapsed time
+              Uint32 elapsed_ticks = SDL_GetTicks() - current_animation.prev_update_ticks;
+              if (elapsed_ticks >= m_animations[current_animation.animation_name].update_interval) 
+              {
+                current_animation.prev_update_ticks = SDL_GetTicks();
+                current_animation.frame_idx++;
+              }
+
+              // Get clipping rectangle based on frame index
+              SDL_FRect clipping_rect = m_animations[current_animation.animation_name].frames[current_animation.frame_idx];
+
+              // Get destination rectangle
+              SDL_FRect destination_rect;
+              destination_rect.x = (state.X - state.SizeX / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
+              destination_rect.y = m_window_size[1] - (state.Y - state.SizeY / 2 - (m_camera[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (entity->size_y * m_scale[1]);
+              destination_rect.h = state.SizeY * m_scale[1];
+              destination_rect.w = state.SizeX * m_scale[0];
+
+              SDL_RenderTextureRotated(m_renderer, m_animations[current_animation.animation_name].sprite_sheet, &clipping_rect, &destination_rect,
+                                       -state.Angle, NULL, SDL_FLIP_NONE); });
+}
