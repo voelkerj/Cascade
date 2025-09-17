@@ -62,6 +62,8 @@ public:
   bool WasReleased(const SDL_Scancode &key) { return m_inputs.WasReleased(key); };
   bool IsHeld(const SDL_Scancode &key) { return m_inputs.IsHeld(key); };
 
+  std::string GetBasePath(){return m_base_path;};
+
 private:
   // ECS
   entt::registry m_entt_registry;
