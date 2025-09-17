@@ -4,6 +4,7 @@
 #include "../external/entt/entt.hpp"
 #include "system.hpp"
 #include "inputs.hpp"
+#include "components.hpp"
 
 #include "../external/SDL/include/SDL3/SDL.h"
 

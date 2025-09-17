@@ -2,8 +2,6 @@
 
 #include "../include/system.hpp"
 
-struct State;
-
 Graphics::Graphics()
 {
   // Initialize Window
