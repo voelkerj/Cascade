@@ -48,10 +48,9 @@ void Graphics::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
 
   if (!sprite_sheet)
   {
+    std::cerr << "Failed to load file " << sheet_path << "\n";
     std::cerr << SDL_GetError() << std::endl;
-    exit(1);
-    // std::cerr << "Failed to load file " << sheet_path << "\n";
-    // exit(1);
+    exit(1);    
   }
 
   SDL_SetTextureScaleMode(sprite_sheet, SDL_SCALEMODE_NEAREST); // use nearest pixel scaling

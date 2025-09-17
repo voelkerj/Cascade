@@ -8,8 +8,7 @@ Cascade::Cascade()
   SDL_Init(SDL_INIT_VIDEO);
   m_base_path = SDL_GetBasePath();
 
-  Graphics graphics;
-  AddSystem<Graphics>("graphics", graphics);
+  AddSystem<Graphics>("graphics");
 }
 
 Cascade::~Cascade(){}
