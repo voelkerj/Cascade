@@ -31,7 +31,7 @@ public:
   template <typename T, typename... Args>
   void AddSystem(std::string system_name, Args... args)
   {
-    if (std::is_base_of<System, T>::value)
+    if (!std::is_base_of<System, T>::value)
     {
       std::cerr << system_name << " must derive from System class.\n";
       exit(1);
@@ -43,7 +43,7 @@ public:
   template <typename T>
   T *GetSystem(std::string system_name)
   {
-    return m_systems[system_name].get();
+    return dynamic_cast<T*>(m_systems[system_name].get());
   }
 
   void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
@@ -56,8 +56,8 @@ public:
 
   void UpdateInputEvents();
   bool WasPressed(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };
-  bool WasReleased(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };
-  bool IsHeld(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };
+  bool WasReleased(const SDL_Scancode &key) { return m_inputs.WasReleased(key); };
+  bool IsHeld(const SDL_Scancode &key) { return m_inputs.IsHeld(key); };
 
 private:
   // ECS
