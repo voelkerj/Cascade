@@ -102,7 +102,7 @@ void Graphics::DrawEntities(entt::registry &registry)
     // Get destination rectangle
     SDL_FRect destination_rect;
     destination_rect.x = (state.X - state.SizeX / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
-    destination_rect.y = m_window_size[1] - (state.Y - state.SizeY / 2 - (m_camera[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (entity->size_y * m_scale[1]);
+    destination_rect.y = m_window_size[1] - (state.Y - state.SizeY / 2 - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (state.SizeY * m_scale[1]);
     destination_rect.h = state.SizeY * m_scale[1];
     destination_rect.w = state.SizeX * m_scale[0];
 
