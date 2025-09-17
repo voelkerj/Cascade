@@ -86,26 +86,31 @@ void Graphics::DrawEntities(entt::registry &registry)
 {
   auto view = registry.view<CurrentAnimation, const State>();
 
-  view.each([](auto &current_animation, const auto &state)
-            { 
-              // Get frame index based on elapsed time
-              Uint32 elapsed_ticks = SDL_GetTicks() - current_animation.prev_update_ticks;
-              if (elapsed_ticks >= m_animations[current_animation.animation_name].update_interval) 
-              {
-                current_animation.prev_update_ticks = SDL_GetTicks();
-                current_animation.frame_idx++;
-              }
+  for (auto [entity, current_animation, state] : view.each())
+  {
+    // Get frame index based on elapsed time
+    Uint32 elapsed_ticks = SDL_GetTicks() - current_animation.prev_update_ticks;
+    if (elapsed_ticks >= m_animations[current_animation.animation_name].update_interval)
+    {
+      current_animation.prev_update_ticks = SDL_GetTicks();
+      current_animation.frame_idx++;
+    }
 
-              // Get clipping rectangle based on frame index
-              SDL_FRect clipping_rect = m_animations[current_animation.animation_name].frames[current_animation.frame_idx];
+    // Get clipping rectangle based on frame index
+    SDL_FRect clipping_rect = m_animations[current_animation.animation_name].frames[current_animation.frame_idx];
 
-              // Get destination rectangle
-              SDL_FRect destination_rect;
-              destination_rect.x = (state.X - state.SizeX / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
-              destination_rect.y = m_window_size[1] - (state.Y - state.SizeY / 2 - (m_camera[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (entity->size_y * m_scale[1]);
-              destination_rect.h = state.SizeY * m_scale[1];
-              destination_rect.w = state.SizeX * m_scale[0];
+    // Get destination rectangle
+    SDL_FRect destination_rect;
+    destination_rect.x = (state.X - state.SizeX / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
+    destination_rect.y = m_window_size[1] - (state.Y - state.SizeY / 2 - (m_camera[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (entity->size_y * m_scale[1]);
+    destination_rect.h = state.SizeY * m_scale[1];
+    destination_rect.w = state.SizeX * m_scale[0];
 
-              SDL_RenderTextureRotated(m_renderer, m_animations[current_animation.animation_name].sprite_sheet, &clipping_rect, &destination_rect,
-                                       -state.Angle, NULL, SDL_FLIP_NONE); });
+    // TODO: Not necessary to allocate a string here for every animation, every frame.
+    //       But it sure does help with readability.
+    std::string sprite_sheet_name = m_animations[current_animation.animation_name].sprite_sheet;
+
+    SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &destination_rect,
+                             -state.Angle, NULL, SDL_FLIP_NONE);
+  }
 }
