@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "../include/system.hpp"
+#include "../include/components.hpp"
 
 Graphics::Graphics()
 {

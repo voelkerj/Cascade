@@ -1,6 +1,8 @@
 #ifndef CASCADE_SYSTEM_H
 #define CASCADE_SYSTEM_H
 
+// This file houses the base system class and some baked-in systems
+
 #include "../external/entt/entt.hpp"
 #include "../external/SDL/include/SDL3/SDL.h"
 #include "../external/SDL_image/include/SDL3_image/SDL_image.h"
