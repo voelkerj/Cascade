@@ -1,6 +1,8 @@
 #ifndef CASCADE_CASCADE_H
 #define CASCADE_CASCADE_H
 
+#include <iostream>
+
 #include "../external/entt/entt.hpp"
 #include "system.hpp"
 #include "inputs.hpp"
