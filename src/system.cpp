@@ -89,7 +89,6 @@ void Graphics::DrawEntities(entt::registry &registry)
 
   for (auto [entity, current_animation, state] : view.each())
   {
-    std::cout << "drawing entity\n";
     // Get frame index based on elapsed time
     // Only do this if there is more than one frame in this animation
     if (m_animations[current_animation.animation_name].frames.size() > 1)
@@ -117,6 +116,8 @@ void Graphics::DrawEntities(entt::registry &registry)
     destination_rect.y = m_window_size[1] - (state.Y - state.SizeY / 2 - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (state.SizeY * m_scale[1]);
     destination_rect.h = state.SizeY * m_scale[1];
     destination_rect.w = state.SizeX * m_scale[0];
+
+    std::cout << destination_rect.x << ", " << destination_rect.y << ", " << destination_rect.h << ", " << destination_rect.w << "\n";
 
     // TODO: Not necessary to allocate a string here for every animation, every frame.
     //       But it sure does help with readability.
