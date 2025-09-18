@@ -32,9 +32,6 @@ Graphics::Graphics()
   m_camera.pos[1] = 0;
   m_camera.FOV[0] = screen_width / m_camera.zoom;
   m_camera.FOV[1] = screen_height / m_camera.zoom;
-
-  std::cout << m_camera.FOV[0] << ", " << m_camera.FOV[1] << "\n";
-
   m_scale[0] = m_window_size[0] / m_camera.FOV[0];
   m_scale[1] = m_window_size[1] / m_camera.FOV[1];
 }
@@ -83,6 +80,13 @@ void Graphics::AddFrame(std::string animation_name, int x, int y, int w, int h)
 void Graphics::SetCameraZoom(float zoom)
 {
   m_camera.zoom = zoom;
+
+  int screen_width, screen_height;
+  SDL_GetCurrentRenderOutputSize(m_renderer, &screen_width, &screen_height);
+  m_camera.FOV[0] = screen_width / m_camera.zoom;
+  m_camera.FOV[1] = screen_height / m_camera.zoom;
+  m_scale[0] = m_window_size[0] / m_camera.FOV[0];
+  m_scale[1] = m_window_size[1] / m_camera.FOV[1];
 }
 
 void Graphics::Update(entt::registry &registry)
