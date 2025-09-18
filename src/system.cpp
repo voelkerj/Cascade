@@ -21,6 +21,8 @@ Graphics::Graphics()
     exit(1);
   }
 
+  std::cout << m_renderer << " (constructor)\n";
+
   SDL_SetRenderDrawColor(m_renderer, 0x26, 0x26, 0x26, 0xFF);
 
   // Initialize Camera
@@ -132,7 +134,7 @@ void Graphics::DrawEntities(entt::registry &registry)
     // std::cout << destination_rect.x << ", " << destination_rect.y << ", " << destination_rect.h << ", " << destination_rect.w << "\n";
     // std::cout << clipping_rect.x << ", " << clipping_rect.y << ", " << clipping_rect.h << ", " << clipping_rect.w << "\n";
 
-    SDL_SetRenderDrawColor(m_renderer, 0x32, 0xa8, 0x52, 0xFF);
+    std::cout << m_renderer << "\n";
     SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &destination_rect,
                              -state.Angle, NULL, SDL_FLIP_NONE);
   }
