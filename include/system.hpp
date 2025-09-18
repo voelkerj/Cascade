@@ -57,6 +57,8 @@ class Graphics : public System
   void Update(entt::registry &registry) override;
   void DrawEntities(entt::registry &registry);
 
+  SDL_Renderer* GetRenderer(){return m_renderer;};
+
   private:
   SDL_Window* m_window;
   int m_window_size[2]; // Width & Height

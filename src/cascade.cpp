@@ -45,6 +45,7 @@ void Cascade::SetCurrentAnimation(entt::entity entity, std::string animation_nam
 
 void Cascade::StartFrame()
 {
+  SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
   m_frame_start_ticks = SDL_GetTicks();
 
   m_inputs.StartFrame();

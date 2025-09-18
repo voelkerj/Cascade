@@ -89,6 +89,7 @@ void Graphics::DrawEntities(entt::registry &registry)
 
   for (auto [entity, current_animation, state] : view.each())
   {
+    std::cout << "drawing entity\n";
     // Get frame index based on elapsed time
     // Only do this if there is more than one frame in this animation
     if (m_animations[current_animation.animation_name].frames.size() > 1)
@@ -120,7 +121,7 @@ void Graphics::DrawEntities(entt::registry &registry)
     // TODO: Not necessary to allocate a string here for every animation, every frame.
     //       But it sure does help with readability.
     std::string sprite_sheet_name = m_animations[current_animation.animation_name].sprite_sheet;
-
++
     SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &destination_rect,
                              -state.Angle, NULL, SDL_FLIP_NONE);
   }
