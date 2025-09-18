@@ -21,7 +21,7 @@ Graphics::Graphics()
     exit(1);
   }
 
-  SDL_SetRenderDrawColor(m_renderer, 0x26, 0x26, 0x26, 0xFF);
+  SDL_SetRenderDrawColor(m_renderer, 0x01, 0x06, 0x0d, 0xFF);
 
   // Initialize Camera
   SDL_GetWindowSize(m_window, &m_window_size[0], &m_window_size[1]);
