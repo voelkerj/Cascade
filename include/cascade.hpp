@@ -54,6 +54,9 @@ public:
   void AddFrame(std::string animation_name, int x, int y, int w, int h);
   void SetCurrentAnimation(entt::entity entity, std::string animation_name);
 
+  float GetCameraZoom(){return GetSystem<Graphics>("graphics")->GetCameraZoom();};
+  void SetCameraZoom(float zoom);
+
   void StartFrame();
   void EndFrame();
 

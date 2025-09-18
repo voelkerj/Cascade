@@ -78,6 +78,11 @@ void Graphics::AddFrame(std::string animation_name, int x, int y, int w, int h)
   m_animations[animation_name].frames.push_back(frame);
 }
 
+void Graphics::SetCameraZoom(float zoom)
+{
+  m_camera.zoom = zoom;
+}
+
 void Graphics::Update(entt::registry &registry)
 {
   DrawEntities(registry);

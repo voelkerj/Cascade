@@ -17,7 +17,7 @@ struct Camera {
   // X & Y Position of Camera's origin point (center of screen)
   float pos[2];
 
-  float zoom{1}; // Camera zoom factor. Ratio of pixels per world unit.
+  float zoom{5}; // Camera zoom factor. Ratio of pixels per world unit.
 
   // Width & Height of the Camera's projected FOV in WCS
   float FOV[2];
@@ -53,6 +53,9 @@ class Graphics : public System
   void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
   void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
   void AddFrame(std::string animation_name, int x, int y, int w, int h);
+
+  float GetCameraZoom(){return m_camera.zoom;};
+  void SetCameraZoom(float zoom);
 
   void Update(entt::registry &registry) override;
   void DrawEntities(entt::registry &registry);

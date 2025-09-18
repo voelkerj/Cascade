@@ -43,6 +43,11 @@ void Cascade::SetCurrentAnimation(entt::entity entity, std::string animation_nam
   m_entt_registry.emplace<CurrentAnimation>(entity, animation_name);
 }
 
+void Cascade::SetCameraZoom(float zoom)
+{
+  GetSystem<Graphics>("graphics")->SetCameraZoom(zoom);
+}
+
 void Cascade::StartFrame()
 {
   SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
