@@ -90,11 +90,21 @@ void Graphics::DrawEntities(entt::registry &registry)
   for (auto [entity, current_animation, state] : view.each())
   {
     // Get frame index based on elapsed time
-    Uint32 elapsed_ticks = SDL_GetTicks() - current_animation.prev_update_ticks;
-    if (elapsed_ticks >= m_animations[current_animation.animation_name].update_interval)
+    // Only do this if there is more than one frame in this animation
+    if (m_animations[current_animation.animation_name].frames.size() > 1)
     {
-      current_animation.prev_update_ticks = SDL_GetTicks();
-      current_animation.frame_idx++;
+      Uint32 elapsed_ticks = SDL_GetTicks() - current_animation.prev_update_ticks;
+      if (elapsed_ticks >= m_animations[current_animation.animation_name].update_interval)
+      {
+        current_animation.prev_update_ticks = SDL_GetTicks();
+        current_animation.frame_idx++;
+      }
+
+      // Don't overrun frame vector
+      if (current_animation.frame_idx > m_animations[current_animation.animation_name].frames.size())
+      {
+        current_animation.frame_idx = 0;
+      }
     }
 
     // Get clipping rectangle based on frame index
