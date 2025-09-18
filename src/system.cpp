@@ -33,6 +33,8 @@ Graphics::Graphics()
   m_camera.FOV[0] = screen_width / m_camera.zoom;
   m_camera.FOV[1] = screen_height / m_camera.zoom;
 
+  std::cout << m_camera.FOV[0] << ", " << m_camera.FOV[1] << "\n";
+
   m_scale[0] = m_window_size[0] / m_camera.FOV[0];
   m_scale[1] = m_window_size[1] / m_camera.FOV[1];
 }
@@ -126,9 +128,9 @@ void Graphics::DrawEntities(entt::registry &registry)
     //       But it sure does help with readability.
     std::string sprite_sheet_name = m_animations[current_animation.animation_name].sprite_sheet;
 
-    std::cout << sprite_sheet_name << "\n";
-    std::cout << destination_rect.x << ", " << destination_rect.y << ", " << destination_rect.h << ", " << destination_rect.w << "\n";
-    std::cout << clipping_rect.x << ", " << clipping_rect.y << ", " << clipping_rect.h << ", " << clipping_rect.w << "\n";
+    // std::cout << sprite_sheet_name << "\n";
+    // std::cout << destination_rect.x << ", " << destination_rect.y << ", " << destination_rect.h << ", " << destination_rect.w << "\n";
+    // std::cout << clipping_rect.x << ", " << clipping_rect.y << ", " << clipping_rect.h << ", " << clipping_rect.w << "\n";
 
     SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &destination_rect,
                              -state.Angle, NULL, SDL_FLIP_NONE);
