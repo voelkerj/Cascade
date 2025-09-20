@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.25.1)
 project(Cascade)
 
 add_library(Cascade STATIC
-${CMAKE_CURRENT_SOURCE_DIR}/src/cascade.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/game.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/inputs.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/system.cpp)
 
