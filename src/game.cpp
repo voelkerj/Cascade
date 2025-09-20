@@ -51,6 +51,7 @@ void Cascade::Game::SetCameraZoom(float zoom)
 void Cascade::Game::StartFrame()
 {
   m_frame_start_ticks = SDL_GetTicks();
+  std::cout << m_frame_start_ticks << "\n";
   SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
 
   m_inputs.StartFrame();
@@ -65,6 +66,8 @@ void Cascade::Game::EndFrame()
     pair.second->Update(m_entt_registry, GetTimeSinceLastFrame());
   }
 
+  m_frame_end_ticks = SDL_GetTicks();
+
   EnforceFPS();
 
   m_last_frame_start_ticks = m_frame_start_ticks;
@@ -72,8 +75,6 @@ void Cascade::Game::EndFrame()
 
 void Cascade::Game::EnforceFPS()
 {
-  m_frame_end_ticks = SDL_GetTicks();
-
   float elapsed_time = (m_frame_end_ticks - m_frame_start_ticks) / 1000;
 
   if (elapsed_time < (1.0 / m_fps))
