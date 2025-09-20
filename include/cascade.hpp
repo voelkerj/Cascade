@@ -67,6 +67,9 @@ public:
 
   std::string GetBasePath(){return m_base_path;};
 
+  // Math
+  float RandInRange(float min, float max);
+
 private:
   // ECS
   entt::registry m_entt_registry;

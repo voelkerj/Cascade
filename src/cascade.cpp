@@ -1,4 +1,6 @@
 #include <iostream>
+#include <random>
+#include <chrono>
 
 #include "cascade.hpp"
 
@@ -90,4 +92,12 @@ void Cascade::UpdateInputEvents()
     else if (m_event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || m_event.type == SDL_EVENT_MOUSE_BUTTON_UP)
       m_inputs.HandleMouseEvent(m_event);
   }
+}
+
+float Cascade::RandInRange(float min, float max)
+{
+  std::mt19937 generator(std::chrono::system_clock::now().time_since_epoch().count());
+  std::uniform_real_distribution<> distribution(min, max);
+
+  return distribution(generator);
 }
