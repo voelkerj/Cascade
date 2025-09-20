@@ -72,11 +72,7 @@ namespace Cascade
 
     std::string GetBasePath() { return m_base_path; };
 
-    Uint32 GetTimeSinceLastFrame() { 
-      std::cout << "SDL_GetTicks: " << SDL_GetTicks() << "\n";
-      std::cout << "m_last_frame_start_ticks: " << m_last_frame_start_ticks << "\n";
-      return (SDL_GetTicks() - m_last_frame_start_ticks) / 1000; 
-    };
+    void SetFPS(int fps) {m_fps = fps; };
 
   private:
     // ECS
@@ -90,7 +86,6 @@ namespace Cascade
     int m_fps{60};
     Uint32 m_frame_start_ticks{0};
     Uint32 m_frame_end_ticks{1};
-    Uint32 m_last_frame_start_ticks{0};
     void EnforceFPS();
 
     // Inputs

@@ -62,14 +62,11 @@ void Cascade::Game::EndFrame()
   // Update all systems
   for (const auto& pair : m_systems)
   {
-    pair.second->Update(m_entt_registry, GetTimeSinceLastFrame());
+    pair.second->Update(m_entt_registry);
   }
 
   m_frame_end_ticks = SDL_GetTicks();
-
   EnforceFPS();
-
-  m_last_frame_start_ticks = m_frame_start_ticks;
 }
 
 void Cascade::Game::EnforceFPS()
