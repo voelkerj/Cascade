@@ -1,12 +1,12 @@
 #include "inputs.hpp"
 
-void Inputs::StartFrame()
+void Cascade::Inputs::StartFrame()
 {
   m_pressed_keys.clear();
   m_released_keys.clear();
 }
 
-void Inputs::HandleKeyboardEvent(SDL_Event event)
+void Cascade::Inputs::HandleKeyboardEvent(SDL_Event event)
 {
   if (event.type == SDL_EVENT_KEY_DOWN) {
     m_pressed_keys[event.key.scancode] = true;
@@ -18,7 +18,7 @@ void Inputs::HandleKeyboardEvent(SDL_Event event)
   }
 }
 
-void Inputs::HandleMouseEvent(SDL_Event event)
+void Cascade::Inputs::HandleMouseEvent(SDL_Event event)
 {
   SDL_GetMouseState(&m_mouse_coords[0], &m_mouse_coords[1]);
 
@@ -40,17 +40,17 @@ void Inputs::HandleMouseEvent(SDL_Event event)
   }
 }
 
-bool Inputs::WasPressed(const SDL_Scancode& key)
+bool Cascade::Inputs::WasPressed(const SDL_Scancode& key)
 {
   return m_pressed_keys[key];
 }
 
-bool Inputs::WasReleased(const SDL_Scancode& key)
+bool Cascade::Inputs::WasReleased(const SDL_Scancode& key)
 {
   return m_released_keys[key];
 }
 
-bool Inputs::IsHeld(const SDL_Scancode& key)
+bool Cascade::Inputs::IsHeld(const SDL_Scancode& key)
 {
   return m_held_keys[key];
 }

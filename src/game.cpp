@@ -1,10 +1,8 @@
 #include <iostream>
-#include <random>
-#include <chrono>
 
-#include "cascade.hpp"
+#include "game.hpp"
 
-Cascade::Cascade()
+Cascade::Game::Game()
 {
   // Initialize SDL
   SDL_Init(SDL_INIT_VIDEO);
@@ -13,44 +11,44 @@ Cascade::Cascade()
   AddSystem<Graphics>("graphics");
 }
 
-Cascade::~Cascade(){}
+Cascade::Game::~Game(){}
 
-entt::entity Cascade::CreateEntity()
+entt::entity Cascade::Game::CreateEntity()
 {
   return m_entt_registry.create();
 }
 
-void Cascade::DestroyEntity(entt::entity entity)
+void Cascade::Game::DestroyEntity(entt::entity entity)
 {
   m_entt_registry.destroy(entity);
 }
 
-void Cascade::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
+void Cascade::Game::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
 {
   GetSystem<Graphics>("graphics")->LoadSpriteSheet(sheet_name, sheet_path);
 }
 
-void Cascade::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
+void Cascade::Game::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
 {
   GetSystem<Graphics>("graphics")->CreateAnimation(animation_name, sheet_name, update_interval);
 }
 
-void Cascade::AddFrame(std::string animation_name, int x, int y, int w, int h)
+void Cascade::Game::AddFrame(std::string animation_name, int x, int y, int w, int h)
 {
   GetSystem<Graphics>("graphics")->AddFrame(animation_name, x, y, w, h);
 }
 
-void Cascade::SetCurrentAnimation(entt::entity entity, std::string animation_name)
+void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animation_name)
 {
   m_entt_registry.emplace<CurrentAnimation>(entity, animation_name);
 }
 
-void Cascade::SetCameraZoom(float zoom)
+void Cascade::Game::SetCameraZoom(float zoom)
 {
   GetSystem<Graphics>("graphics")->SetCameraZoom(zoom);
 }
 
-void Cascade::StartFrame()
+void Cascade::Game::StartFrame()
 {
   SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
   m_frame_start_ticks = SDL_GetTicks();
@@ -59,7 +57,7 @@ void Cascade::StartFrame()
   UpdateInputEvents();
 }
 
-void Cascade::EndFrame()
+void Cascade::Game::EndFrame()
 {
   // Update all systems
   for (const auto& pair : m_systems)
@@ -70,7 +68,7 @@ void Cascade::EndFrame()
   EnforceFPS();
 }
 
-void Cascade::EnforceFPS()
+void Cascade::Game::EnforceFPS()
 {
   m_frame_end_ticks = SDL_GetTicks();
 
@@ -83,7 +81,7 @@ void Cascade::EnforceFPS()
   }
 }
 
-void Cascade::UpdateInputEvents()
+void Cascade::Game::UpdateInputEvents()
 {
   if (SDL_PollEvent(&m_event))
   {
@@ -92,12 +90,4 @@ void Cascade::UpdateInputEvents()
     else if (m_event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || m_event.type == SDL_EVENT_MOUSE_BUTTON_UP)
       m_inputs.HandleMouseEvent(m_event);
   }
-}
-
-float Cascade::RandInRange(float min, float max)
-{
-  std::mt19937 generator(std::chrono::system_clock::now().time_since_epoch().count());
-  std::uniform_real_distribution<> distribution(min, max);
-
-  return distribution(generator);
 }

@@ -7,71 +7,76 @@
 #include "../external/SDL/include/SDL3/SDL.h"
 #include "../external/SDL_image/include/SDL3_image/SDL_image.h"
 
-class System
+namespace Cascade
 {
+  class System
+  {
   public:
-  virtual void Update(entt::registry &registry) = 0;
-};
+    virtual void Update(entt::registry &registry) = 0;
+  };
 
-struct Camera {
-  // X & Y Position of Camera's origin point (center of screen)
-  float pos[2];
+  struct Camera
+  {
+    // X & Y Position of Camera's origin point (center of screen)
+    float pos[2];
 
-  float zoom{5}; // Camera zoom factor. Ratio of pixels per world unit.
+    float zoom{5}; // Camera zoom factor. Ratio of pixels per world unit.
 
-  // Width & Height of the Camera's projected FOV in WCS
-  float FOV[2];
+    // Width & Height of the Camera's projected FOV in WCS
+    float FOV[2];
 
-  float screen_top_y;
-  float screen_bottom_y;
-  float screen_left_x;
-  float screen_right_x;
-};
+    float screen_top_y;
+    float screen_bottom_y;
+    float screen_left_x;
+    float screen_right_x;
+  };
 
-// Shared, read-only animation definition
-struct Animation
-{
-  int update_interval; // milliseconds
-  std::vector<SDL_FRect> frames;
-  std::string sprite_sheet;
-};
+  // Shared, read-only animation definition
+  struct Animation
+  {
+    int update_interval; // milliseconds
+    std::vector<SDL_FRect> frames;
+    std::string sprite_sheet;
+  };
 
-// Per-entity animation state
-struct CurrentAnimation
-{
-  std::string animation_name; // string to look up the Animation
-  int frame_idx{0};
-  Uint32 prev_update_ticks{0};
-};
+  // Per-entity animation state
+  struct CurrentAnimation
+  {
+    std::string animation_name; // string to look up the Animation
+    int frame_idx{0};
+    Uint32 prev_update_ticks{0};
+  };
 
-// Graphics System
-// Operates on components: CurrentAnimation and State
-class Graphics : public System
-{
+  // Graphics System
+  // Operates on components: CurrentAnimation and State
+  class Graphics : public System
+  {
   public:
-  Graphics();
-  ~Graphics();
+    Graphics();
+    ~Graphics();
 
-  void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
-  void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
-  void AddFrame(std::string animation_name, int x, int y, int w, int h);
+    void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
+    void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
+    void AddFrame(std::string animation_name, int x, int y, int w, int h);
 
-  float GetCameraZoom(){return m_camera.zoom;};
-  void SetCameraZoom(float zoom);
+    float GetCameraZoom() { return m_camera.zoom; };
+    void SetCameraZoom(float zoom);
 
-  void Update(entt::registry &registry) override;
-  void DrawEntities(entt::registry &registry);
-  void DrawLine(float a[2], float b[2], int color[4]);
+    void Update(entt::registry &registry) override;
+    void DrawEntities(entt::registry &registry);
+    void DrawLine(float a[2], float b[2], int color[4]);
 
-  SDL_Renderer* GetRenderer(){return m_renderer;};
+    SDL_Renderer *GetRenderer() { return m_renderer; };
 
   private:
-  SDL_Window* m_window;
-  int m_window_size[2]; // Width & Height
-  SDL_Renderer* m_renderer;
-  Camera m_camera;
-  float m_scale[2]; // X & Y scale
-  std::map<std::string, SDL_Texture*> m_sprite_sheets;
-  std::unordered_map<std::string, Animation> m_animations;
-};
+    SDL_Window *m_window;
+    int m_window_size[2]; // Width & Height
+    SDL_Renderer *m_renderer;
+    Camera m_camera;
+    float m_scale[2]; // X & Y scale
+    std::map<std::string, SDL_Texture *> m_sprite_sheets;
+    std::unordered_map<std::string, Animation> m_animations;
+  };
+}
+
 #endif

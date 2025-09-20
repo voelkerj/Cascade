@@ -5,30 +5,33 @@
 
 #include "../external/SDL/include/SDL3/SDL.h"
 
-class Inputs
+namespace Cascade
 {
-public:
-  Inputs(){};
-  ~Inputs(){};
+  class Inputs
+  {
+  public:
+    Inputs() {};
+    ~Inputs() {};
 
-  void StartFrame();
+    void StartFrame();
 
-  void HandleKeyboardEvent(SDL_Event event);
-  void HandleMouseEvent(SDL_Event event);
+    void HandleKeyboardEvent(SDL_Event event);
+    void HandleMouseEvent(SDL_Event event);
 
-  bool WasPressed(const SDL_Scancode &key);
-  bool WasReleased(const SDL_Scancode &key);
-  bool IsHeld(const SDL_Scancode &key);
+    bool WasPressed(const SDL_Scancode &key);
+    bool WasReleased(const SDL_Scancode &key);
+    bool IsHeld(const SDL_Scancode &key);
 
-  bool m_left_click{false};
-  bool m_right_click{false};
-  bool m_middle_click{false};
-  float m_mouse_coords[2]; // Screen coordinate system
+    bool m_left_click{false};
+    bool m_right_click{false};
+    bool m_middle_click{false};
+    float m_mouse_coords[2]; // Screen coordinate system
 
-private:
-  std::map<SDL_Scancode, bool> m_pressed_keys;
-  std::map<SDL_Scancode, bool> m_released_keys;
-  std::map<SDL_Scancode, bool> m_held_keys;
-};
+  private:
+    std::map<SDL_Scancode, bool> m_pressed_keys;
+    std::map<SDL_Scancode, bool> m_released_keys;
+    std::map<SDL_Scancode, bool> m_held_keys;
+  };
+}
 
 #endif

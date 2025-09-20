@@ -3,7 +3,7 @@
 #include "../include/system.hpp"
 #include "../include/components.hpp"
 
-Graphics::Graphics()
+Cascade::Graphics::Graphics()
 {
   // Initialize Window
   m_window = SDL_CreateWindow("Cascade", 0, 0, SDL_WINDOW_FULLSCREEN);
@@ -36,12 +36,12 @@ Graphics::Graphics()
   m_scale[1] = m_window_size[1] / m_camera.FOV[1];
 }
 
-Graphics::~Graphics()
+Cascade::Graphics::~Graphics()
 {
   SDL_DestroyWindow(m_window);
 }
 
-void Graphics::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
+void Cascade::Graphics::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
 {
   SDL_Texture *sprite_sheet = IMG_LoadTexture(m_renderer, sheet_path.c_str());
 
@@ -57,7 +57,7 @@ void Graphics::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
   m_sprite_sheets.emplace(sheet_name, sprite_sheet);
 }
 
-void Graphics::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
+void Cascade::Graphics::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
 {
   Animation new_animation;
   new_animation.sprite_sheet = sheet_name;
@@ -66,7 +66,7 @@ void Graphics::CreateAnimation(std::string animation_name, std::string sheet_nam
   m_animations.emplace(animation_name, new_animation);
 }
 
-void Graphics::AddFrame(std::string animation_name, int x, int y, int w, int h)
+void Cascade::Graphics::AddFrame(std::string animation_name, int x, int y, int w, int h)
 {
   SDL_FRect frame;
   frame.x = x;
@@ -77,7 +77,7 @@ void Graphics::AddFrame(std::string animation_name, int x, int y, int w, int h)
   m_animations[animation_name].frames.push_back(frame);
 }
 
-void Graphics::SetCameraZoom(float zoom)
+void Cascade::Graphics::SetCameraZoom(float zoom)
 {
   m_camera.zoom = zoom;
 
@@ -89,14 +89,14 @@ void Graphics::SetCameraZoom(float zoom)
   m_scale[1] = m_window_size[1] / m_camera.FOV[1];
 }
 
-void Graphics::Update(entt::registry &registry)
+void Cascade::Graphics::Update(entt::registry &registry)
 {
   DrawEntities(registry);
   SDL_SetRenderDrawColor(m_renderer, 0x01, 0x06, 0x0d, 0xFF);
   SDL_RenderPresent(m_renderer);
 }
 
-void Graphics::DrawEntities(entt::registry &registry)
+void Cascade::Graphics::DrawEntities(entt::registry &registry)
 {
   auto view = registry.view<CurrentAnimation, const State>();
 
@@ -143,7 +143,7 @@ void Graphics::DrawEntities(entt::registry &registry)
   }
 }
 
-void Graphics::DrawLine(float a[2], float b[2], int color[4])
+void Cascade::Graphics::DrawLine(float a[2], float b[2], int color[4])
 {
   float a_x = (a[0] - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
   float a_y = m_window_size[1] - (a[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1];
