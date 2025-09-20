@@ -12,7 +12,7 @@ namespace Cascade
   class System
   {
   public:
-    virtual void Update(entt::registry &registry) = 0;
+    virtual void Update(entt::registry &registry, Uint32 dT) = 0;
   };
 
   struct Camera
@@ -62,7 +62,7 @@ namespace Cascade
     float GetCameraZoom() { return m_camera.zoom; };
     void SetCameraZoom(float zoom);
 
-    void Update(entt::registry &registry) override;
+    void Update(entt::registry &registry, Uint32 dT) override;
     void DrawEntities(entt::registry &registry);
     void DrawLine(float a[2], float b[2], int color[4]);
 
