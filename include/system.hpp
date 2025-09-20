@@ -44,6 +44,8 @@ struct CurrentAnimation
   Uint32 prev_update_ticks{0};
 };
 
+// Graphics System
+// Operates on components: CurrentAnimation and State
 class Graphics : public System
 {
   public:
@@ -59,6 +61,7 @@ class Graphics : public System
 
   void Update(entt::registry &registry) override;
   void DrawEntities(entt::registry &registry);
+  void DrawLine(float a[2], float b[2], int color[4]);
 
   SDL_Renderer* GetRenderer(){return m_renderer;};
 

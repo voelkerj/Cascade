@@ -141,3 +141,16 @@ void Graphics::DrawEntities(entt::registry &registry)
                              -state.Angle, NULL, SDL_FLIP_NONE);
   }
 }
+
+void Graphics::DrawLine(float a[2], float b[2], int color[4])
+{
+  float a_x = (a[0] - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
+  float a_y = m_window_size[1] - (a[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1];
+
+  float b_x = (b[0] - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
+  float b_y = m_window_size[1] - (b[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1];
+
+  SDL_SetRenderDrawColor(m_renderer, color[0], color[1], color[2], color[3]);
+
+  SDL_RenderLine(m_renderer, a_x, a_y, b_x, b_y);
+}
