@@ -62,7 +62,7 @@ void Cascade::Game::EndFrame()
   // Update all systems
   for (const auto& pair : m_systems)
   {
-    pair.second->Update(m_entt_registry);
+    pair.second->Update(m_entt_registry, GetTimeSinceLastFrame());
   }
 
   EnforceFPS();
