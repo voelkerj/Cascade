@@ -51,7 +51,6 @@ void Cascade::Game::SetCameraZoom(float zoom)
 void Cascade::Game::StartFrame()
 {
   m_frame_start_ticks = SDL_GetTicks();
-  std::cout << m_frame_start_ticks << "\n";
   SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
 
   m_inputs.StartFrame();

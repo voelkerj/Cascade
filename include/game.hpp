@@ -72,7 +72,11 @@ namespace Cascade
 
     std::string GetBasePath() { return m_base_path; };
 
-    Uint32 GetTimeSinceLastFrame() { return (SDL_GetTicks() - m_last_frame_start_ticks) / 1000; };
+    Uint32 GetTimeSinceLastFrame() { 
+      std::cout << "SDL_GetTicks: " << SDL_GetTicks() << "\n";
+      std::cout << "m_last_frame_start_ticks: " << m_last_frame_start_ticks << "\n";
+      return (SDL_GetTicks() - m_last_frame_start_ticks) / 1000; 
+    };
 
   private:
     // ECS
