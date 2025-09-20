@@ -50,8 +50,8 @@ void Cascade::Game::SetCameraZoom(float zoom)
 
 void Cascade::Game::StartFrame()
 {
-  SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
   m_frame_start_ticks = SDL_GetTicks();
+  SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
 
   m_inputs.StartFrame();
   UpdateInputEvents();
@@ -66,6 +66,8 @@ void Cascade::Game::EndFrame()
   }
 
   EnforceFPS();
+
+  m_last_frame_start_ticks = m_frame_start_ticks;
 }
 
 void Cascade::Game::EnforceFPS()
