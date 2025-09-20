@@ -2,6 +2,8 @@
 #define CASCADE_CASCADE_MATH_H
 
 #include <random>
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <chrono>
 
 #include "components.hpp"
@@ -23,7 +25,7 @@ namespace Cascade
 
   float Dot(const float v1[2], const float v2[2])
   {
-    return v1[0] * v2[0] + v1[2] * v2[1];
+    return v1[0] * v2[0] + v1[1] * v2[1];
   }
 
   float Norm(const float v[2])
