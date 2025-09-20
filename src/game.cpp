@@ -71,7 +71,7 @@ void Cascade::Game::EndFrame()
 
 void Cascade::Game::EnforceFPS()
 {
-  float elapsed_time = (m_frame_end_ticks - m_frame_start_ticks) / 1000;
+  float elapsed_time = (m_frame_end_ticks - m_frame_start_ticks) / 1000.f;
 
   if (elapsed_time < (1.0 / m_fps))
   {
