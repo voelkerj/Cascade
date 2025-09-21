@@ -35,5 +35,5 @@ std::vector<float> Cascade::Unit(const float v[2])
 
 float Cascade::VectorAngle(const float v1[2], const float v2[2])
 {
-  return (180 / M_PI) * (acos(Dot(v1, v2) / (Norm(v1) * Norm(v2))));
+  return (180 / M_PI) * acos(Dot(v1, v2) / (Norm(v1) * Norm(v2)));
 }
