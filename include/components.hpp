@@ -1,6 +1,8 @@
 #ifndef CASCADE_COMPONENTS_H
 #define CASCADE_COMPONENTS_H
 
+#include "cascade_math.hpp"
+
 // This file contains some baked-in components for Cascade
 
 namespace Cascade
@@ -16,7 +18,7 @@ namespace Cascade
     std::string animation_name; // string to look up the Animation
     int frame_idx{0};
     Uint32 prev_update_ticks{0};
-    int color[3]{RandInRange(0,255), RandInRange(0,255), RandInRange(0,255)};
+    int color[3]{(int)RandInRange(0,255), (int)RandInRange(0,255), (int)RandInRange(0,255)};
   };
 }
 
