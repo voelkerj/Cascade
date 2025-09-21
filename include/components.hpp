@@ -17,7 +17,7 @@ namespace Cascade
   {
     std::string animation_name; // string to look up the Animation
     int frame_idx{0};
-    Uint32 prev_update_ticks{0};
+    uint32_t prev_update_ticks{0};
     int color[3]{(int)RandInRange(0,255), (int)RandInRange(0,255), (int)RandInRange(0,255)};
   };
 }
