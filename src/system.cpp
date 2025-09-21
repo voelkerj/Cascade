@@ -98,30 +98,30 @@ void Cascade::Graphics::Update(entt::registry &registry)
 
 void Cascade::Graphics::DrawEntities(entt::registry &registry)
 {
-  auto view = registry.view<CurrentAnimation, const State>();
+  auto view = registry.view<DrawingState, const State>();
 
-  for (auto [entity, current_animation, state] : view.each())
+  for (auto [entity, drawing_state, state] : view.each())
   {
     // Get frame index based on elapsed time
     // Only do this if there is more than one frame in this animation
-    if (m_animations[current_animation.animation_name].frames.size() > 1)
+    if (m_animations[drawing_state.animation_name].frames.size() > 1)
     {
-      Uint32 elapsed_ticks = SDL_GetTicks() - current_animation.prev_update_ticks;
-      if (elapsed_ticks >= m_animations[current_animation.animation_name].update_interval)
+      Uint32 elapsed_ticks = SDL_GetTicks() - drawing_state.prev_update_ticks;
+      if (elapsed_ticks >= m_animations[drawing_state.animation_name].update_interval)
       {
-        current_animation.prev_update_ticks = SDL_GetTicks();
-        current_animation.frame_idx++;
+        drawing_state.prev_update_ticks = SDL_GetTicks();
+        drawing_state.frame_idx++;
       }
 
       // Don't overrun frame vector
-      if (current_animation.frame_idx > m_animations[current_animation.animation_name].frames.size())
+      if (drawing_state.frame_idx > m_animations[drawing_state.animation_name].frames.size())
       {
-        current_animation.frame_idx = 0;
+        drawing_state.frame_idx = 0;
       }
     }
 
     // Get clipping rectangle based on frame index
-    SDL_FRect clipping_rect = m_animations[current_animation.animation_name].frames[current_animation.frame_idx];
+    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
 
     // Get destination rectangle
     SDL_FRect destination_rect;
@@ -132,11 +132,13 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
 
     // TODO: Not necessary to allocate a string here for every animation, every frame.
     //       But it sure does help with readability.
-    std::string sprite_sheet_name = m_animations[current_animation.animation_name].sprite_sheet;
+    std::string sprite_sheet_name = m_animations[drawing_state.animation_name].sprite_sheet;
 
     // std::cout << sprite_sheet_name << "\n";
     // std::cout << destination_rect.x << ", " << destination_rect.y << ", " << destination_rect.h << ", " << destination_rect.w << "\n";
     // std::cout << clipping_rect.x << ", " << clipping_rect.y << ", " << clipping_rect.h << ", " << clipping_rect.w << "\n";
+
+    SDL_SetTextureColorMod(m_sprite_sheets[sprite_sheet_name], drawing_state.color[0], drawing_state.color[1], drawing_state.color[2]);
 
     SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &destination_rect,
                              -state.Angle, NULL, SDL_FLIP_NONE);

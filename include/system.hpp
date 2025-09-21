@@ -39,14 +39,6 @@ namespace Cascade
     std::string sprite_sheet;
   };
 
-  // Per-entity animation state
-  struct CurrentAnimation
-  {
-    std::string animation_name; // string to look up the Animation
-    int frame_idx{0};
-    Uint32 prev_update_ticks{0};
-  };
-
   // Graphics System
   // Operates on components: CurrentAnimation and State
   class Graphics : public System

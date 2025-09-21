@@ -40,7 +40,7 @@ void Cascade::Game::AddFrame(std::string animation_name, int x, int y, int w, in
 
 void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animation_name)
 {
-  m_entt_registry.emplace<CurrentAnimation>(entity, animation_name);
+  m_entt_registry.emplace<DrawingState>(entity, animation_name);
 }
 
 void Cascade::Game::SetCameraZoom(float zoom)
