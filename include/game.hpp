@@ -57,6 +57,8 @@ namespace Cascade
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
     void SetCurrentAnimation(entt::entity entity, std::string animation_name);
+    void SetColor(entt::entity entity, int color[3]);
+    void ResetColor(entt::entity entity);
     void DrawLine(float a[2], float b[2], int color[4]) { GetSystem<Graphics>("graphics")->DrawLine(a, b, color); };
 
     float GetCameraZoom() { return GetSystem<Graphics>("graphics")->GetCameraZoom(); };

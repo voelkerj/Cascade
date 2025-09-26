@@ -43,6 +43,21 @@ void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animati
   m_entt_registry.emplace<DrawingState>(entity, animation_name);
 }
 
+void Cascade::Game::SetColor(entt::entity entity, int color[3])
+{
+  Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
+  drawing_state.enable_tint = true;
+  drawing_state.color[0] = color[0];
+  drawing_state.color[1] = color[1];
+  drawing_state.color[2] = color[2];
+}
+
+void Cascade::Game::ResetColor(entt::entity entity)
+{
+  Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
+  drawing_state.enable_tint = false;
+}
+
 void Cascade::Game::SetCameraZoom(float zoom)
 {
   GetSystem<Graphics>("graphics")->SetCameraZoom(zoom);
