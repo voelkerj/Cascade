@@ -98,6 +98,7 @@ void Cascade::Graphics::SetCameraZoom(float zoom)
 void Cascade::Graphics::Update(entt::registry &registry)
 {
   DrawEntities(registry);
+  DrawUI(registry);
   SDL_SetRenderDrawColor(m_renderer, 0x01, 0x06, 0x0d, 0xFF);
   SDL_RenderPresent(m_renderer);
 }
