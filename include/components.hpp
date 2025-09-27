@@ -9,7 +9,7 @@ namespace Cascade
 {
   struct State
   {
-    float X{0}, Y{0}, VX{0}, VY{0}, AX{0}, AY{0}, SizeX{1}, SizeY{1}, Angle{0};
+    float X{0}, Y{0}, VX{0}, VY{0}, AX{0}, AY{0}, ScaleX{1}, ScaleY{1}, Angle{0};
   };
 
   // Animation and rendering state
