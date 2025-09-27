@@ -43,12 +43,22 @@ void Cascade::Game::SetAnimationOffset(std::string animation_name, int dx, int d
   GetSystem<Graphics>("graphics")->SetAnimationOffset(animation_name, dx, dy);
 }
 
-void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animation_name)
+void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animation_name, int end_behavior)
 {
   if (auto drawing_state = m_entt_registry.try_get<DrawingState>(entity))
   {
+    drawing_state->default_animation_name = drawing_state->animation_name;
     drawing_state->animation_name = animation_name;
+
+    drawing_state->current_animation_end_behavior = end_behavior;
+
     return;
+  }
+
+  if (end_behavior == 1)
+  {
+    std::cerr << "Cannot set animation to run once if it has no previous animation!\n";
+    exit(1);
   }
 
   m_entt_registry.emplace<DrawingState>(entity, animation_name);

@@ -20,6 +20,8 @@ namespace Cascade
     uint32_t prev_update_ticks{0};
     bool enable_tint{false};
     int color[3]{0, 0, 0};
+    int current_animation_end_behavior{0}; // 0 = loop, 1 = once
+    std::string default_animation_name;
   };
 }
 

@@ -122,6 +122,15 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
       // Don't overrun frame vector
       if (drawing_state.frame_idx >= m_animations[drawing_state.animation_name].frames.size())
       {
+        // If we are only running this animation once
+        if (drawing_state.current_animation_end_behavior == 1)
+        {
+          // return to previous animation
+          std::string temp_name = drawing_state.animation_name;
+          drawing_state.animation_name = drawing_state.default_animation_name;
+          drawing_state.default_animation_name = temp_name;
+        }
+
         drawing_state.frame_idx = 0;
       }
     }
@@ -139,10 +148,6 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
     // TODO: Not necessary to allocate a string here for every animation, every frame.
     //       But it sure does help with readability.
     std::string sprite_sheet_name = m_animations[drawing_state.animation_name].sprite_sheet;
-
-    // std::cout << sprite_sheet_name << "\n";
-    // std::cout << destination_rect.x << ", " << destination_rect.y << ", " << destination_rect.h << ", " << destination_rect.w << "\n";
-    // std::cout << clipping_rect.x << ", " << clipping_rect.y << ", " << clipping_rect.h << ", " << clipping_rect.w << "\n";
 
     if (drawing_state.enable_tint)
       SDL_SetTextureColorMod(m_sprite_sheets[sprite_sheet_name], drawing_state.color[0], drawing_state.color[1], drawing_state.color[2]);
