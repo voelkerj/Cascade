@@ -7,6 +7,8 @@
 #include "../external/SDL/include/SDL3/SDL.h"
 #include "../external/SDL_image/include/SDL3_image/SDL_image.h"
 
+#include "components.hpp"
+
 namespace Cascade
 {
   class System
