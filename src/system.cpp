@@ -126,9 +126,7 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
         if (drawing_state.current_animation_end_behavior == 1)
         {
           // return to previous animation
-          std::string temp_name = drawing_state.animation_name;
           drawing_state.animation_name = drawing_state.default_animation_name;
-          drawing_state.default_animation_name = temp_name;
         }
 
         drawing_state.frame_idx = 0;
