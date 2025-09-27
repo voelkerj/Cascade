@@ -114,7 +114,7 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
       }
 
       // Don't overrun frame vector
-      if (drawing_state.frame_idx > m_animations[drawing_state.animation_name].frames.size())
+      if (drawing_state.frame_idx >= m_animations[drawing_state.animation_name].frames.size())
       {
         drawing_state.frame_idx = 0;
       }
