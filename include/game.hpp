@@ -55,6 +55,7 @@ namespace Cascade
 
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
+    void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
     void SetCurrentAnimation(entt::entity entity, std::string animation_name);
     void SetColor(entt::entity entity, int color[3]);

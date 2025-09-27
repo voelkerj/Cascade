@@ -37,6 +37,7 @@ namespace Cascade
     int update_interval; // milliseconds
     std::vector<SDL_FRect> frames;
     std::string sprite_sheet;
+    int offset[2]{0, 0};
   };
 
   // Graphics System
@@ -50,6 +51,7 @@ namespace Cascade
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
+    void SetAnimationOffset(std::string animation_name, int dx, int dy);
 
     float GetCameraZoom() { return m_camera.zoom; };
     void SetCameraZoom(float zoom);

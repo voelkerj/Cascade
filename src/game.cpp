@@ -38,6 +38,11 @@ void Cascade::Game::AddFrame(std::string animation_name, int x, int y, int w, in
   GetSystem<Graphics>("graphics")->AddFrame(animation_name, x, y, w, h);
 }
 
+void Cascade::Game::SetAnimationOffset(std::string animation_name, int dx, int dy)
+{
+  GetSystem<Graphics>("graphics")->SetAnimationOffset(animation_name, dx, dy);
+}
+
 void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animation_name)
 {
   if (auto drawing_state = m_entt_registry.try_get<DrawingState>(entity))
@@ -45,7 +50,7 @@ void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animati
     drawing_state->animation_name = animation_name;
     return;
   }
-  
+
   m_entt_registry.emplace<DrawingState>(entity, animation_name);
 }
 
