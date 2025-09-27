@@ -28,6 +28,7 @@ namespace Cascade
   {
     std::string name;
     int position[2]{0, 0};
+    float angle{0};
   };
 }
 
