@@ -40,6 +40,12 @@ void Cascade::Game::AddFrame(std::string animation_name, int x, int y, int w, in
 
 void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animation_name)
 {
+  if (auto drawing_state = m_entt_registry.try_get<DrawingState>(entity))
+  {
+    drawing_state->animation_name = animation_name;
+    return;
+  }
+  
   m_entt_registry.emplace<DrawingState>(entity, animation_name);
 }
 
