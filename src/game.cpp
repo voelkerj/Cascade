@@ -52,6 +52,8 @@ void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animati
 
     drawing_state->current_animation_end_behavior = end_behavior;
 
+    drawing_state->frame_idx = 0;
+
     return;
   }
 
