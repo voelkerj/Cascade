@@ -47,7 +47,6 @@ void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animati
 {
   if (auto drawing_state = m_entt_registry.try_get<DrawingState>(entity))
   {
-    drawing_state->default_animation_name = drawing_state->animation_name;
     drawing_state->animation_name = animation_name;
 
     drawing_state->current_animation_end_behavior = end_behavior;
@@ -63,7 +62,11 @@ void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animati
     exit(1);
   }
 
-  m_entt_registry.emplace<DrawingState>(entity, animation_name);
+  DrawingState new_drawing_state;
+  new_drawing_state.animation_name = animation_name;
+  new_drawing_state.default_animation_name = animation_name;
+
+  m_entt_registry.emplace<DrawingState>(entity, new_drawing_state);
 }
 
 void Cascade::Game::SetColor(entt::entity entity, int color[3])
