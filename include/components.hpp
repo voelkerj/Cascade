@@ -23,6 +23,12 @@ namespace Cascade
     int current_animation_end_behavior{0}; // 0 = loop, 1 = once
     std::string default_animation_name;
   };
+
+  struct UIElement
+  {
+    std::string name;
+    int position[2]{0, 0};
+  };
 }
 
 #endif
