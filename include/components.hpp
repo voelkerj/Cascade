@@ -26,9 +26,10 @@ namespace Cascade
 
   struct UIElement
   {
-    std::string name;
     int position[2]{0, 0};
+    int size[2]{0, 0};
     float angle{0};
+    bool click_type[3]{false, false, false}; // left, middle, right
   };
 }
 

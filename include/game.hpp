@@ -68,9 +68,9 @@ namespace Cascade
     void StartFrame();
     void EndFrame();
 
-    void AddButton();
     void UpdateInputEvents();
     bool WasPressed(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };
+    bool WasPressed(entt::entity entity, int mouse_button);
     bool WasReleased(const SDL_Scancode &key) { return m_inputs.WasReleased(key); };
     bool IsHeld(const SDL_Scancode &key) { return m_inputs.IsHeld(key); };
 

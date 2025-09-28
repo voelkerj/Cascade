@@ -3,7 +3,10 @@
 
 #include <map>
 
+#include "../external/entt/entt.hpp"
 #include "../external/SDL/include/SDL3/SDL.h"
+
+#include "components.hpp"
 
 namespace Cascade
 {
@@ -13,10 +16,12 @@ namespace Cascade
     Inputs() {};
     ~Inputs() {};
 
-    void StartFrame();
+    void StartFrame(entt::registry &registry);
 
     void HandleKeyboardEvent(SDL_Event event);
-    void HandleMouseEvent(SDL_Event event);
+    void HandleMouseEvent(SDL_Event event, entt::registry &registry);
+
+    void UpdateUIElements(entt::registry &registry);
 
     bool WasPressed(const SDL_Scancode &key);
     bool WasReleased(const SDL_Scancode &key);

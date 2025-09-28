@@ -94,7 +94,7 @@ void Cascade::Game::StartFrame()
   m_frame_start_ticks = SDL_GetTicks();
   SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
 
-  m_inputs.StartFrame();
+  m_inputs.StartFrame(m_entt_registry);
   UpdateInputEvents();
 }
 
@@ -126,8 +126,18 @@ void Cascade::Game::UpdateInputEvents()
   if (SDL_PollEvent(&m_event))
   {
     if (m_event.type == SDL_EVENT_KEY_DOWN || m_event.type == SDL_EVENT_KEY_UP)
+    {
       m_inputs.HandleKeyboardEvent(m_event);
+    }
     else if (m_event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || m_event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-      m_inputs.HandleMouseEvent(m_event);
+    {
+      m_inputs.HandleMouseEvent(m_event, m_entt_registry);
+    }
   }
+}
+
+bool Cascade::Game::WasPressed(entt::entity entity, int mouse_button)
+{
+  UIElement& ui_element = m_entt_registry.get<UIElement>(entity);
+  return ui_element.click_type[mouse_button];
 }
