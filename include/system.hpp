@@ -22,7 +22,7 @@ namespace Cascade
     // X & Y Position of Camera's origin point (center of screen)
     float pos[2];
 
-    float zoom{5}; // Camera zoom factor. Ratio of pixels per world unit.
+    float zoom{1}; // Camera zoom factor. Ratio of pixels per world unit.
 
     // Width & Height of the Camera's projected FOV in WCS
     float FOV[2];
