@@ -58,6 +58,9 @@ namespace Cascade
     float GetCameraZoom() { return m_camera.zoom; };
     void SetCameraZoom(float zoom);
 
+    int GetScreenWidth();
+    int GetScreenHeight();
+
     void Update(entt::registry &registry) override;
     void DrawEntities(entt::registry &registry);
     void UpdateDrawingState(DrawingState& drawing_state);

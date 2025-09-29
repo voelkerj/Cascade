@@ -95,6 +95,20 @@ void Cascade::Graphics::SetCameraZoom(float zoom)
   m_scale[1] = m_window_size[1] / m_camera.FOV[1];
 }
 
+int Cascade::Graphics::GetScreenWidth()
+{
+  int screen_width, screen_height;
+  SDL_GetCurrentRenderOutputSize(m_renderer, &screen_width, &screen_height);
+  return screen_width;
+}
+
+int Cascade::Graphics::GetScreenHeight()
+{
+  int screen_width, screen_height;
+  SDL_GetCurrentRenderOutputSize(m_renderer, &screen_width, &screen_height);
+  return screen_height;
+}
+
 void Cascade::Graphics::Update(entt::registry &registry)
 {
   DrawEntities(registry);

@@ -65,6 +65,9 @@ namespace Cascade
     float GetCameraZoom() { return GetSystem<Graphics>("graphics")->GetCameraZoom(); };
     void SetCameraZoom(float zoom);
 
+    int GetScreenWidth(){return GetSystem<Graphics>("graphics")->GetScreenWidth();};
+    int GetScreenHeight(){return GetSystem<Graphics>("graphics")->GetScreenHeight();};
+
     void StartFrame();
     void EndFrame();
 
