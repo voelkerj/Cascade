@@ -28,7 +28,7 @@ void Cascade::Inputs::HandleKeyboardEvent(SDL_Event event)
   }
 }
 
-void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry)
+void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry, int screen_width, int screen_height)
 {
   SDL_GetMouseState(&m_mouse_coords[0], &m_mouse_coords[1]);
 
@@ -41,7 +41,7 @@ void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry
       m_right_click = true;
   }
   if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-    UpdateUIElements(registry);
+    UpdateUIElements(registry, screen_width, screen_height);
 
     if (event.button.button == SDL_BUTTON_LEFT)
       m_left_click = false;
@@ -52,17 +52,17 @@ void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry
   }
 }
 
-void Cascade::Inputs::UpdateUIElements(entt::registry &registry)
+void Cascade::Inputs::UpdateUIElements(entt::registry &registry, int screen_width, int screen_height)
 {
   auto view = registry.view<UIElement>();
 
   for (auto [entity, ui_element] : view.each())
   {
     // Check if mouse pointer was within ui element when pressed
-    if ((m_mouse_coords[0] >= ui_element.position[0]) && 
-    (m_mouse_coords[0] <= ui_element.position[0] + ui_element.size[0]) && 
-    (m_mouse_coords[1] >= ui_element.position[1]) && 
-    (m_mouse_coords[1] <= ui_element.position[1] + ui_element.size[1]))
+    if ((m_mouse_coords[0] >= ui_element.position[0] * screen_width) && 
+    (m_mouse_coords[0] <= ui_element.position[0] * screen_width + ui_element.size[0]) && 
+    (m_mouse_coords[1] >= ui_element.position[1] * screen_height) && 
+    (m_mouse_coords[1] <= ui_element.position[1] * screen_height + ui_element.size[1]))
     {
       if (m_left_click)
         ui_element.click_type[0] = true;

@@ -19,9 +19,9 @@ namespace Cascade
     void StartFrame(entt::registry &registry);
 
     void HandleKeyboardEvent(SDL_Event event);
-    void HandleMouseEvent(SDL_Event event, entt::registry &registry);
+    void HandleMouseEvent(SDL_Event event, entt::registry &registry, int screen_width, int screen_height);
 
-    void UpdateUIElements(entt::registry &registry);
+    void UpdateUIElements(entt::registry &registry, int screen_width, int screen_height);
 
     bool WasPressed(const SDL_Scancode &key);
     bool WasReleased(const SDL_Scancode &key);

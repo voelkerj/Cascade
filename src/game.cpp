@@ -131,7 +131,7 @@ void Cascade::Game::UpdateInputEvents()
     }
     else if (m_event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || m_event.type == SDL_EVENT_MOUSE_BUTTON_UP)
     {
-      m_inputs.HandleMouseEvent(m_event, m_entt_registry);
+      m_inputs.HandleMouseEvent(m_event, m_entt_registry, GetScreenWidth(), GetScreenHeight());
     }
   }
 }
