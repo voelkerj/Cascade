@@ -159,11 +159,28 @@ void Cascade::Graphics::DrawUI(entt::registry &registry)
     SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
 
     // Get destination rectangle
-    SDL_FRect destination_rect;
-    destination_rect.x = ui_element.position[0];
-    destination_rect.y = ui_element.position[1];
-    destination_rect.w = clipping_rect.w;
-    destination_rect.h = clipping_rect.h;
+    // UI Element Drawing is based on % location on screen
+    SDL_FRect destination_rect;    
+    destination_rect.x = GetScreenWidth() * ui_element.position[0];
+    destination_rect.y = GetScreenHeight() * ui_element.position[1];
+    // Can also change size
+    if (ui_element.size[0] == 0)
+    {
+      destination_rect.w = clipping_rect.w;
+    }
+    else
+    {
+      destination_rect.w = ui_element.size[0];
+    }
+    
+    if (ui_element.size[1] == 0)
+    {
+      destination_rect.h = clipping_rect.h;
+    }
+    else
+    {
+      destination_rect.h = ui_element.size[1];
+    }
 
     // TODO: Not necessary to allocate a string here for every animation, every frame.
     //       But it sure does help with readability.
