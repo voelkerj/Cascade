@@ -149,7 +149,7 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
 
 void Cascade::Graphics::DrawUI(entt::registry &registry)
 {
-  auto view = registry.view<DrawingState, const UIElement>();
+  auto view = registry.view<DrawingState, UIElement>();
 
   for (auto [entity, drawing_state, ui_element] : view.each())
   {
@@ -163,24 +163,20 @@ void Cascade::Graphics::DrawUI(entt::registry &registry)
     SDL_FRect destination_rect;    
     destination_rect.x = GetScreenWidth() * ui_element.position[0];
     destination_rect.y = GetScreenHeight() * ui_element.position[1];
+
     // Can also change size
     if (ui_element.size[0] == 0)
     {
-      destination_rect.w = clipping_rect.w;
+      ui_element.size[0] = clipping_rect.w;
     }
-    else
-    {
-      destination_rect.w = ui_element.size[0];
-    }
-    
+
     if (ui_element.size[1] == 0)
     {
-      destination_rect.h = clipping_rect.h;
+      ui_element.size[0] = clipping_rect.h;
     }
-    else
-    {
-      destination_rect.h = ui_element.size[1];
-    }
+
+    destination_rect.w = ui_element.size[0];
+    destination_rect.h = ui_element.size[1];    
 
     // TODO: Not necessary to allocate a string here for every animation, every frame.
     //       But it sure does help with readability.

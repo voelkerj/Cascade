@@ -59,7 +59,10 @@ void Cascade::Inputs::UpdateUIElements(entt::registry &registry)
   for (auto [entity, ui_element] : view.each())
   {
     // Check if mouse pointer was within ui element when pressed
-    if ((m_mouse_coords[0] >= ui_element.position[0]) && (m_mouse_coords[0] <= ui_element.position[0] + ui_element.size[0]) && (m_mouse_coords[1] >= ui_element.position[1]) && (m_mouse_coords[1] <= ui_element.position[1] + ui_element.size[1]))
+    if ((m_mouse_coords[0] >= ui_element.position[0]) && 
+    (m_mouse_coords[0] <= ui_element.position[0] + ui_element.size[0]) && 
+    (m_mouse_coords[1] >= ui_element.position[1]) && 
+    (m_mouse_coords[1] <= ui_element.position[1] + ui_element.size[1]))
     {
       if (m_left_click)
         ui_element.click_type[0] = true;
