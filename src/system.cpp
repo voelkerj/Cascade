@@ -283,7 +283,6 @@ void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)
 
     if (ui_element.hover && !ui_element.hover_animation.empty())
     {
-      std::cout << "hovering\n";
       SetCurrentAnimation(registry, entity, ui_element.hover_animation, 1);
     }
   }

@@ -5,6 +5,8 @@ void Cascade::Inputs::StartFrame(entt::registry &registry, int screen_width, int
   m_pressed_keys.clear();
   m_released_keys.clear();
 
+  SDL_GetMouseState(&m_mouse_coords[0], &m_mouse_coords[1]);
+
   // Reset UI Elements
   auto view = registry.view<UIElement>();
 
@@ -31,8 +33,6 @@ void Cascade::Inputs::HandleKeyboardEvent(SDL_Event event)
 
 void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry, int screen_width, int screen_height)
 {
-  SDL_GetMouseState(&m_mouse_coords[0], &m_mouse_coords[1]);
-
   if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
     if (event.button.button == SDL_BUTTON_LEFT)
       m_left_click = true;
