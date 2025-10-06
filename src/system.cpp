@@ -240,12 +240,12 @@ void Cascade::Graphics::UpdateDrawingState(DrawingState &drawing_state)
     // Don't overrun frame vector
     if (drawing_state.frame_idx >= m_animations[drawing_state.animation_name].frames.size())
     {
+      std::cout << "boop\n";
       // If we are only running this animation once
       if (drawing_state.current_animation_end_behavior == 1)
       {
         // return to previous animation
         drawing_state.animation_name = drawing_state.default_animation_name;
-        std::cout << drawing_state.default_animation_name << "\n";
       }
 
       drawing_state.frame_idx = 0;
