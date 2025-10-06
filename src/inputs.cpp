@@ -1,6 +1,6 @@
 #include "inputs.hpp"
 
-void Cascade::Inputs::StartFrame(entt::registry &registry)
+void Cascade::Inputs::StartFrame(entt::registry &registry, int screen_width, int screen_height)
 {
   m_pressed_keys.clear();
   m_released_keys.clear();
@@ -13,7 +13,7 @@ void Cascade::Inputs::StartFrame(entt::registry &registry)
     ui_element.click_type[0] = false;
     ui_element.click_type[1] = false;
     ui_element.click_type[2] = false;
-    ui_element.hover = false;
+    ui_element.hover = MouseWithinUIElement(ui_element, screen_width, screen_height);
   }
 }
 
@@ -53,6 +53,14 @@ void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry
   }
 }
 
+bool Cascade::Inputs::MouseWithinUIElement(UIElement ui_element, int screen_width, int screen_height)
+{
+  return (m_mouse_coords[0] >= ui_element.position[0] * screen_width) && 
+    (m_mouse_coords[0] <= ui_element.position[0] * screen_width + ui_element.size[0]) && 
+    (m_mouse_coords[1] >= ui_element.position[1] * screen_height) && 
+    (m_mouse_coords[1] <= ui_element.position[1] * screen_height + ui_element.size[1]);
+}
+
 void Cascade::Inputs::UpdateUIElements(entt::registry &registry, int screen_width, int screen_height)
 {
   auto view = registry.view<UIElement>();
@@ -60,13 +68,8 @@ void Cascade::Inputs::UpdateUIElements(entt::registry &registry, int screen_widt
   for (auto [entity, ui_element] : view.each())
   {
     // Check if mouse pointer was within ui element when pressed
-    if ((m_mouse_coords[0] >= ui_element.position[0] * screen_width) && 
-    (m_mouse_coords[0] <= ui_element.position[0] * screen_width + ui_element.size[0]) && 
-    (m_mouse_coords[1] >= ui_element.position[1] * screen_height) && 
-    (m_mouse_coords[1] <= ui_element.position[1] * screen_height + ui_element.size[1]))
-    {
-      ui_element.hover = true;
-      
+    if (MouseWithinUIElement(ui_element, screen_width, screen_height))
+    {      
       if (m_left_click)
         ui_element.click_type[0] = true;
       if (m_middle_click)

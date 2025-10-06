@@ -16,10 +16,11 @@ namespace Cascade
     Inputs() {};
     ~Inputs() {};
 
-    void StartFrame(entt::registry &registry);
+    void StartFrame(entt::registry &registry, int screen_width, int screen_height);
 
     void HandleKeyboardEvent(SDL_Event event);
     void HandleMouseEvent(SDL_Event event, entt::registry &registry, int screen_width, int screen_height);
+    bool MouseWithinUIElement(UIElement ui_element, int screen_width, int screen_height);
 
     void UpdateUIElements(entt::registry &registry, int screen_width, int screen_height);
 

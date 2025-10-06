@@ -97,7 +97,7 @@ void Cascade::Game::StartFrame()
   m_frame_start_ticks = SDL_GetTicks();
   SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
 
-  m_inputs.StartFrame(m_entt_registry);
+  m_inputs.StartFrame(m_entt_registry, GetScreenWidth(), GetScreenHeight());
   UpdateInputEvents();
 }
 
