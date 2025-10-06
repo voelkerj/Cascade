@@ -94,6 +94,9 @@ void Cascade::Graphics::SetCurrentAnimation(entt::registry &registry, entt::enti
     drawing_state->frame_idx = 0;
 
     return;
+  } else {
+    std::cerr << animation_name << " is not a valid animation!\n";
+    exit(1);
   }
 
   if (end_behavior == 1)
@@ -137,8 +140,8 @@ int Cascade::Graphics::GetScreenHeight()
 
 void Cascade::Graphics::Update(entt::registry &registry)
 {
-  UpdateUIAnimations(registry);
   DrawEntities(registry);
+  UpdateUIAnimations(registry);
   DrawUI(registry);
   SDL_SetRenderDrawColor(m_renderer, 0x01, 0x06, 0x0d, 0xFF);
   SDL_RenderPresent(m_renderer);
