@@ -245,6 +245,7 @@ void Cascade::Graphics::UpdateDrawingState(DrawingState &drawing_state)
       {
         // return to previous animation
         drawing_state.animation_name = drawing_state.default_animation_name;
+        std::cout << drawing_state.default_animation_name << "\n";
       }
 
       drawing_state.frame_idx = 0;
