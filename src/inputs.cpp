@@ -13,6 +13,7 @@ void Cascade::Inputs::StartFrame(entt::registry &registry)
     ui_element.click_type[0] = false;
     ui_element.click_type[1] = false;
     ui_element.click_type[2] = false;
+    ui_element.hover = false;
   }
 }
 
@@ -70,6 +71,8 @@ void Cascade::Inputs::UpdateUIElements(entt::registry &registry, int screen_widt
         ui_element.click_type[1] = true;
       if (m_right_click)
         ui_element.click_type[2] = true;
+
+      ui_element.hover = true;
     }    
   }
 }

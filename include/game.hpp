@@ -62,6 +62,9 @@ namespace Cascade
     void ResetColor(entt::entity entity);
     void DrawLine(float a[2], float b[2], int color[4]) { GetSystem<Graphics>("graphics")->DrawLine(a, b, color); };
 
+    void SetHoverAnimation(entt::entity button, std::string animation_name);
+    void SetClickAnimation(entt::entity button, std::string animation_name);
+
     float GetCameraZoom() { return GetSystem<Graphics>("graphics")->GetCameraZoom(); };
     void SetCameraZoom(float zoom);
 
@@ -70,6 +73,8 @@ namespace Cascade
 
     void StartFrame();
     void EndFrame();
+
+    void UpdateUIAnimations();
 
     void UpdateInputEvents();
     bool WasPressed(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };

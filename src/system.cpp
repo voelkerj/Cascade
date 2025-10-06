@@ -83,6 +83,32 @@ void Cascade::Graphics::SetAnimationOffset(std::string animation_name, int dx, i
   m_animations[animation_name].offset[1] = dy;
 }
 
+void Cascade::Graphics::SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior)
+{
+  if (auto drawing_state = registry.try_get<DrawingState>(entity))
+  {
+    drawing_state->animation_name = animation_name;
+
+    drawing_state->current_animation_end_behavior = end_behavior;
+
+    drawing_state->frame_idx = 0;
+
+    return;
+  }
+
+  if (end_behavior == 1)
+  {
+    std::cerr << "Cannot set animation to run once if it has no previous animation!\n";
+    exit(1);
+  }
+
+  DrawingState new_drawing_state;
+  new_drawing_state.animation_name = animation_name;
+  new_drawing_state.default_animation_name = animation_name;
+
+  registry.emplace<DrawingState>(entity, new_drawing_state);
+}
+
 void Cascade::Graphics::SetCameraZoom(float zoom)
 {
   m_camera.zoom = zoom;
@@ -229,4 +255,27 @@ void Cascade::Graphics::DrawLine(float a[2], float b[2], int color[4])
   SDL_SetRenderDrawColor(m_renderer, color[0], color[1], color[2], color[3]);
 
   SDL_RenderLine(m_renderer, a_x, a_y, b_x, b_y);
+}
+
+void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)
+{
+  auto view = registry.view<UIElement>();
+
+  for (auto [entity, ui_element] : view.each())
+  {
+    // Check for clicks first so we don't check hover unless we need to
+    // (click animation supercedes hover animation)
+    if ((ui_element.click_type[0] ||
+         ui_element.click_type[1] ||
+         ui_element.click_type[2]) && !ui_element.click_animation.empty())
+    {
+      SetCurrentAnimation(registry, entity, ui_element.click_animation, 1);
+      continue;
+    }
+
+    if (ui_element.hover && !ui_element.hover_animation.empty())
+    {
+      SetCurrentAnimation(registry, entity, ui_element.hover_animation, 1);
+    }
+  }
 }

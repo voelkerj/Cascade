@@ -45,28 +45,7 @@ void Cascade::Game::SetAnimationOffset(std::string animation_name, int dx, int d
 
 void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animation_name, int end_behavior)
 {
-  if (auto drawing_state = m_entt_registry.try_get<DrawingState>(entity))
-  {
-    drawing_state->animation_name = animation_name;
-
-    drawing_state->current_animation_end_behavior = end_behavior;
-
-    drawing_state->frame_idx = 0;
-
-    return;
-  }
-
-  if (end_behavior == 1)
-  {
-    std::cerr << "Cannot set animation to run once if it has no previous animation!\n";
-    exit(1);
-  }
-
-  DrawingState new_drawing_state;
-  new_drawing_state.animation_name = animation_name;
-  new_drawing_state.default_animation_name = animation_name;
-
-  m_entt_registry.emplace<DrawingState>(entity, new_drawing_state);
+  GetSystem<Graphics>("graphics")->SetCurrentAnimation(m_entt_registry, entity, animation_name, end_behavior);
 }
 
 void Cascade::Game::SetColor(entt::entity entity, int color[3])
@@ -82,6 +61,30 @@ void Cascade::Game::ResetColor(entt::entity entity)
 {
   Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
   drawing_state.enable_tint = false;
+}
+
+void Cascade::Game::SetHoverAnimation(entt::entity button, std::string animation_name)
+{
+  if (auto ui_element = m_entt_registry.try_get<UIElement>(button))
+  {
+    ui_element->hover_animation = animation_name;
+    return;
+  }
+
+  std::cerr << "Cannot set hover animation, not a UI element!\n";
+  exit(1);
+}
+
+void Cascade::Game::SetClickAnimation(entt::entity button, std::string animation_name)
+{
+  if (auto ui_element = m_entt_registry.try_get<UIElement>(button))
+  {
+    ui_element->click_animation = animation_name;
+    return;
+  }
+
+  std::cerr << "Cannot set click animation, not a UI element!\n";
+  exit(1);
 }
 
 void Cascade::Game::SetCameraZoom(float zoom)
@@ -119,6 +122,11 @@ void Cascade::Game::EnforceFPS()
     SDL_Delay((1.0 / m_fps) - elapsed_time);
     elapsed_time = 1.0 / m_fps;
   }
+}
+
+void Cascade::Game::UpdateUIAnimations()
+{
+  GetSystem<Graphics>("graphics")->UpdateUIAnimations(m_entt_registry);
 }
 
 void Cascade::Game::UpdateInputEvents()

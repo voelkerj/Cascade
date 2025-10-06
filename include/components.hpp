@@ -30,6 +30,9 @@ namespace Cascade
     int size[2]{0, 0};
     float angle{0};
     bool click_type[3]{false, false, false}; // left, middle, right
+    bool hover{false};
+    std::string hover_animation{""};
+    std::string click_animation{""};
   };
 }
 

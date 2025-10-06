@@ -55,6 +55,8 @@ namespace Cascade
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
 
+    void SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior);
+
     float GetCameraZoom() { return m_camera.zoom; };
     void SetCameraZoom(float zoom);
 
@@ -66,6 +68,8 @@ namespace Cascade
     void UpdateDrawingState(DrawingState& drawing_state);
     void DrawUI(entt::registry &registry);
     void DrawLine(float a[2], float b[2], int color[4]);
+
+    void UpdateUIAnimations(entt::registry &registry);
 
     SDL_Renderer *GetRenderer() { return m_renderer; };
 
