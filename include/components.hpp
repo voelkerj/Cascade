@@ -33,6 +33,7 @@ namespace Cascade
     bool hover{false};
     std::string hover_animation{""};
     std::string click_animation{""};
+    bool click_animation_done{true};
   };
 }
 

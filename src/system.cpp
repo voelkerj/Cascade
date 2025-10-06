@@ -189,6 +189,12 @@ void Cascade::Graphics::DrawUI(entt::registry &registry)
   {
     UpdateDrawingState(drawing_state);
 
+    // If we clicked and the animation is done
+    if (!ui_element.click_animation_done && (drawing_state.animation_name == drawing_state.default_animation_name))
+    {
+      ui_element.click_animation_done = true;
+    }
+
     // Get clipping rectangle based on frame index
     SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
 
@@ -277,12 +283,12 @@ void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)
          ui_element.click_type[1] ||
          ui_element.click_type[2]) && !ui_element.click_animation.empty())
     {
-      std::cout << "entity clicked\n";
       SetCurrentAnimation(registry, entity, ui_element.click_animation, 1);
+      ui_element.click_animation_done = false;
       continue;
     }
 
-    if (ui_element.hover && !ui_element.hover_animation.empty())
+    if (ui_element.click_animation_done && ui_element.hover && !ui_element.hover_animation.empty())
     {
       SetCurrentAnimation(registry, entity, ui_element.hover_animation, 1);
     }
