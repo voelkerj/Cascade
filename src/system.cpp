@@ -101,6 +101,9 @@ void Cascade::Graphics::SetCurrentAnimation(entt::registry &registry, entt::enti
     drawing_state->frame_idx = 0;
 
     return;
+  } else {
+    std::cerr << animation_name << " is not a valid animation!\n";
+    exit(1);
   }
 
   if (end_behavior == 1)
