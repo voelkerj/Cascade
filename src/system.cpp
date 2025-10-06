@@ -228,8 +228,8 @@ void Cascade::Graphics::UpdateDrawingState(DrawingState &drawing_state)
 {
   // Get frame index based on elapsed time
   // Only do this if there is more than one frame in this animation
-  // if (m_animations[drawing_state.animation_name].frames.size() > 1)
-  // {
+  if (m_animations[drawing_state.animation_name].frames.size() > 1)
+  {
     Uint32 elapsed_ticks = SDL_GetTicks() - drawing_state.prev_update_ticks;
     if (elapsed_ticks >= m_animations[drawing_state.animation_name].update_interval)
     {
@@ -249,14 +249,7 @@ void Cascade::Graphics::UpdateDrawingState(DrawingState &drawing_state)
 
       drawing_state.frame_idx = 0;
     }
-  // } else {
-  //   // If we are only running this animation once
-  //   if (drawing_state.current_animation_end_behavior == 1)
-  //   {
-  //     // return to previous animation
-  //     drawing_state.animation_name = drawing_state.default_animation_name;
-  //   }
-  // }
+  }
 }
 
 void Cascade::Graphics::DrawLine(float a[2], float b[2], int color[4])
@@ -284,6 +277,7 @@ void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)
          ui_element.click_type[1] ||
          ui_element.click_type[2]) && !ui_element.click_animation.empty())
     {
+      std::cout << "entity clicked\n";
       SetCurrentAnimation(registry, entity, ui_element.click_animation, 1);
       continue;
     }
