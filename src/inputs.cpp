@@ -65,14 +65,14 @@ void Cascade::Inputs::UpdateUIElements(entt::registry &registry, int screen_widt
     (m_mouse_coords[1] >= ui_element.position[1] * screen_height) && 
     (m_mouse_coords[1] <= ui_element.position[1] * screen_height + ui_element.size[1]))
     {
+      ui_element.hover = true;
+      
       if (m_left_click)
         ui_element.click_type[0] = true;
       if (m_middle_click)
         ui_element.click_type[1] = true;
       if (m_right_click)
         ui_element.click_type[2] = true;
-
-      ui_element.hover = true;
     }    
   }
 }
