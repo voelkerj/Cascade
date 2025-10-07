@@ -64,9 +64,9 @@ namespace Cascade
     int GetScreenHeight();
 
     void Update(entt::registry &registry) override;
+    void CalculateDestinations(entt::registry &registry);
     void DrawEntities(entt::registry &registry);
     void UpdateDrawingState(DrawingState& drawing_state);
-    void DrawUI(entt::registry &registry);
     void DrawLine(float a[2], float b[2], int color[4]);
 
     void UpdateUIAnimations(entt::registry &registry);

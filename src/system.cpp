@@ -144,65 +144,38 @@ int Cascade::Graphics::GetScreenHeight()
 
 void Cascade::Graphics::Update(entt::registry &registry)
 {
-  DrawEntities(registry);
   UpdateUIAnimations(registry);
-  DrawUI(registry);
+  CalculateDestinations(registry);
+  DrawEntities(registry);
   SDL_SetRenderDrawColor(m_renderer, 0x01, 0x06, 0x0d, 0xFF);
   SDL_RenderPresent(m_renderer);
 }
 
-void Cascade::Graphics::DrawEntities(entt::registry &registry)
+void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
 {
   auto view = registry.view<DrawingState, const State>();
 
   for (auto [entity, drawing_state, state] : view.each())
   {
-    UpdateDrawingState(drawing_state);
+    drawing_state.destination_rect.x = (state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
+    drawing_state.destination_rect.y = m_window_size[1] - (state.Y + m_animations[drawing_state.animation_name].offset[1] - clipping_rect.h / 2 - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (clipping_rect.h * m_scale[1]);
+    drawing_state.destination_rect.w = clipping_rect.w * state.ScaleX * m_scale[0];
+    drawing_state.destination_rect.h = clipping_rect.h * state.ScaleY * m_scale[1];
 
-    // Get clipping rectangle based on frame index
-    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
-
-    // Get destination rectangle
-    SDL_FRect destination_rect;
-    destination_rect.x = (state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
-    destination_rect.y = m_window_size[1] - (state.Y + m_animations[drawing_state.animation_name].offset[1] - clipping_rect.h / 2 - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (clipping_rect.h * m_scale[1]);
-    destination_rect.w = clipping_rect.w * state.ScaleX * m_scale[0];
-    destination_rect.h = clipping_rect.h * state.ScaleY * m_scale[1];
-
-    // TODO: Not necessary to allocate a string here for every animation, every frame.
-    //       But it sure does help with readability.
-    std::string sprite_sheet_name = m_animations[drawing_state.animation_name].sprite_sheet;
-
-    if (drawing_state.enable_tint)
-      SDL_SetTextureColorMod(m_sprite_sheets[sprite_sheet_name], drawing_state.color[0], drawing_state.color[1], drawing_state.color[2]);
-
-    SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &destination_rect,
-                             -state.Angle, NULL, SDL_FLIP_NONE);
+    drawing_state.angle = -state.Angle;
   }
-}
 
-void Cascade::Graphics::DrawUI(entt::registry &registry)
-{
-  auto view = registry.view<DrawingState, UIElement>();
+  auto view2 = registry.view<DrawingState, UIElement>();
 
-  for (auto [entity, drawing_state, ui_element] : view.each())
+  for (auto [entity, drawing_state, ui_element] : view2.each())
   {
-    UpdateDrawingState(drawing_state);
-
-    // If we clicked and the animation is done
-    if (!ui_element.click_animation_done && (drawing_state.animation_name == drawing_state.default_animation_name))
-    {
-      ui_element.click_animation_done = true;
-    }
-
     // Get clipping rectangle based on frame index
-    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
+    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx]; 
 
     // Get destination rectangle
     // UI Element Drawing is based on % location on screen
-    SDL_FRect destination_rect;    
-    destination_rect.x = GetScreenWidth() * ui_element.position[0];
-    destination_rect.y = GetScreenHeight() * ui_element.position[1];
+    drawing_state.destination_rect.x = GetScreenWidth() * ui_element.position[0];
+    drawing_state.destination_rect.y = GetScreenHeight() * ui_element.position[1];
 
     // Can also change size
     if (ui_element.size[0] == 0)
@@ -215,8 +188,28 @@ void Cascade::Graphics::DrawUI(entt::registry &registry)
       ui_element.size[0] = clipping_rect.h;
     }
 
-    destination_rect.w = ui_element.size[0];
-    destination_rect.h = ui_element.size[1];    
+    drawing_state.destination_rect.w = ui_element.size[0];
+    drawing_state.destination_rect.h = ui_element.size[1];
+
+    // If we clicked and the animation is done
+    if (!ui_element.click_animation_done && (drawing_state.animation_name == drawing_state.default_animation_name))
+    {
+      ui_element.click_animation_done = true;
+    }
+
+    drawing_state.angle = -ui_element.angle;
+  }
+}
+
+void Cascade::Graphics::DrawEntities(entt::registry &registry)
+{
+  auto view = registry.view<DrawingState>();
+
+  for (auto [entity, drawing_state] : view.each())
+  {
+    UpdateDrawingState(drawing_state);
+
+    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx]; 
 
     // TODO: Not necessary to allocate a string here for every animation, every frame.
     //       But it sure does help with readability.
@@ -225,8 +218,8 @@ void Cascade::Graphics::DrawUI(entt::registry &registry)
     if (drawing_state.enable_tint)
       SDL_SetTextureColorMod(m_sprite_sheets[sprite_sheet_name], drawing_state.color[0], drawing_state.color[1], drawing_state.color[2]);
 
-    SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &destination_rect,
-                             -ui_element.angle, NULL, SDL_FLIP_NONE);
+    SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &drawing_state.destination_rect,
+                             drawing_state.angle, NULL, SDL_FLIP_NONE);
   }
 }
 

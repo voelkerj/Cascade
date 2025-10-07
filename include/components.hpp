@@ -3,6 +3,8 @@
 
 #include "cascade_math.hpp"
 
+#include "../external/SDL/include/SDL3/SDL.h"
+
 // This file contains some baked-in components for Cascade
 
 namespace Cascade
@@ -22,6 +24,8 @@ namespace Cascade
     int color[3]{0, 0, 0};
     int current_animation_end_behavior{0}; // 0 = loop, 1 = once
     std::string default_animation_name;
+    SDL_FRect destination_rect;
+    float angle{0};
   };
 
   struct UIElement
