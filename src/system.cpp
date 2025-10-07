@@ -153,13 +153,14 @@ void Cascade::Graphics::Update(entt::registry &registry)
 
 void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
 {
+  // World Entities
   auto view = registry.view<DrawingState, const State>();
 
   for (auto [entity, drawing_state, state] : view.each())
   {
     // Get clipping rectangle based on frame index
     SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
-    
+
     drawing_state.destination_rect.x = (state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
     drawing_state.destination_rect.y = m_window_size[1] - (state.Y + m_animations[drawing_state.animation_name].offset[1] - clipping_rect.h / 2 - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (clipping_rect.h * m_scale[1]);
     drawing_state.destination_rect.w = clipping_rect.w * state.ScaleX * m_scale[0];
@@ -168,6 +169,7 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     drawing_state.angle = -state.Angle;
   }
 
+  // UI Entities
   auto view2 = registry.view<DrawingState, UIElement>();
 
   for (auto [entity, drawing_state, ui_element] : view2.each())
@@ -175,12 +177,7 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     // Get clipping rectangle based on frame index
     SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx]; 
 
-    // Get destination rectangle
-    // UI Element Drawing is based on % location on screen
-    drawing_state.destination_rect.x = GetScreenWidth() * ui_element.position[0];
-    drawing_state.destination_rect.y = GetScreenHeight() * ui_element.position[1];
-
-    // Can also change size
+    // Check if we need to change size
     if (ui_element.size[0] == 0)
     {
       ui_element.size[0] = clipping_rect.w;
@@ -193,6 +190,11 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
 
     drawing_state.destination_rect.w = ui_element.size[0];
     drawing_state.destination_rect.h = ui_element.size[1];
+
+    // Get destination rectangle
+    // UI Element Drawing is based on % location on screen
+    drawing_state.destination_rect.x = GetScreenWidth() * ui_element.position[0] - drawing_state.destination_rect.w / 2;
+    drawing_state.destination_rect.y = GetScreenHeight() * ui_element.position[1] - drawing_state.destination_rect.h / 2;
 
     // If we clicked and the animation is done
     if (!ui_element.click_animation_done && (drawing_state.animation_name == drawing_state.default_animation_name))
