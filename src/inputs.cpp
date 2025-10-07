@@ -55,10 +55,10 @@ void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry
 
 bool Cascade::Inputs::MouseWithinUIElement(UIElement ui_element, int screen_width, int screen_height)
 {
-  return (m_mouse_coords[0] >= ui_element.position[0] * screen_width) && 
-    (m_mouse_coords[0] <= ui_element.position[0] * screen_width + ui_element.size[0]) && 
-    (m_mouse_coords[1] >= ui_element.position[1] * screen_height) && 
-    (m_mouse_coords[1] <= ui_element.position[1] * screen_height + ui_element.size[1]);
+  return (m_mouse_coords[0] >= ui_element.position[0] * screen_width - ui_element.size[0] / 2) && 
+    (m_mouse_coords[0] <= ui_element.position[0] * screen_width + ui_element.size[0] / 2) && 
+    (m_mouse_coords[1] >= ui_element.position[1] * screen_height - ui_element.size[1] / 2) && 
+    (m_mouse_coords[1] <= ui_element.position[1] * screen_height + ui_element.size[1] / 2);
 }
 
 void Cascade::Inputs::UpdateUIElements(entt::registry &registry, int screen_width, int screen_height)
