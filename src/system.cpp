@@ -157,6 +157,9 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
 
   for (auto [entity, drawing_state, state] : view.each())
   {
+    // Get clipping rectangle based on frame index
+    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
+    
     drawing_state.destination_rect.x = (state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
     drawing_state.destination_rect.y = m_window_size[1] - (state.Y + m_animations[drawing_state.animation_name].offset[1] - clipping_rect.h / 2 - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (clipping_rect.h * m_scale[1]);
     drawing_state.destination_rect.w = clipping_rect.w * state.ScaleX * m_scale[0];
