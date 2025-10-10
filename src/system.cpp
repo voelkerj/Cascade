@@ -83,6 +83,16 @@ void Cascade::Graphics::SetAnimationOffset(std::string animation_name, int dx, i
   m_animations[animation_name].offset[1] = dy;
 }
 
+void Cascade::Graphics::SetLayer(entt::registry &registry, entt::entity entity, int layer)
+{
+  if (auto drawing_state = registry.try_get<DrawingState>(entity))
+  {
+    drawing_state->layer = layer;
+
+    return;
+  }
+}
+
 void Cascade::Graphics::SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior)
 {
   // First check if this is a valid animation name
@@ -208,6 +218,12 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
 
 void Cascade::Graphics::DrawEntities(entt::registry &registry)
 {
+  // First we sort by layer
+  registry.sort<DrawingState>([](const DrawingState &a, const DrawingState &b)
+  {
+    return a.layer > b.layer;
+  });
+
   auto view = registry.view<DrawingState>();
 
   for (auto [entity, drawing_state] : view.each())

@@ -17,6 +17,7 @@ namespace Cascade
   // Animation and rendering state
   struct DrawingState
   {
+    int layer{0};
     std::string animation_name; // string to look up the Animation
     int frame_idx{0};
     uint32_t prev_update_ticks{0};

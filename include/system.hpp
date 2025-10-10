@@ -54,6 +54,7 @@ namespace Cascade
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
+    void SetLayer(entt::registry &registry, entt::entity entity, int layer);
 
     void SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior);
 

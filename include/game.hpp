@@ -58,6 +58,7 @@ namespace Cascade
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
     void SetCurrentAnimation(entt::entity entity, std::string animation_name, int end_behavior);
+    void SetLayer(entt::entity entity, int layer){ GetSystem<Graphics>("graphics")->SetLayer(m_entt_registry, entity, layer); };
     void SetColor(entt::entity entity, int color[3]);
     void ResetColor(entt::entity entity);
     void DrawLine(float a[2], float b[2], int color[4]) { GetSystem<Graphics>("graphics")->DrawLine(a, b, color); };
