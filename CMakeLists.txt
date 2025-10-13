@@ -6,7 +6,8 @@ add_library(Cascade STATIC
 ${CMAKE_CURRENT_SOURCE_DIR}/src/game.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/inputs.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/system.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/cascade_math.cpp)
+${CMAKE_CURRENT_SOURCE_DIR}/src/cascade_math.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/scene.cpp)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)

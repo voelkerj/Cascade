@@ -8,6 +8,7 @@
 #include "system.hpp"
 #include "inputs.hpp"
 #include "components.hpp"
+#include "scene.hpp"
 
 #include "../external/SDL/include/SDL3/SDL.h"
 
@@ -19,8 +20,13 @@ namespace Cascade
     Game();
     ~Game();
 
+    void Run();
+    void Quit();
+    bool Continue(){return m_continue;};
+
     entt::entity CreateEntity();
     void DestroyEntity(entt::entity entity);
+    void DestroyAllEntities();
 
     template <typename T>
     void AddComponent(entt::entity entity, T component_data)
@@ -47,10 +53,28 @@ namespace Cascade
       m_systems.emplace(system_name, std::make_unique<T>(std::forward<Args>(args)...));
     }
 
+    template <typename T, typename... Args>
+    void AddScene(std::string scene_name, Args... args)
+    {
+      if (!std::is_base_of<Scene, T>::value)
+      {
+        std::cerr << scene_name << " must derive from Scene class.\n";
+        exit(1);
+      }
+
+      m_scenes.emplace(scene_name, std::make_unique<T>(std::forward<Args>(args)...));
+    }
+
     template <typename T>
     T *GetSystem(std::string system_name)
     {
       return dynamic_cast<T *>(m_systems[system_name].get());
+    }
+
+    template <typename T>
+    T *GetScene(std::string scene_name)
+    {
+      return dynamic_cast<T *>(m_scenes[scene_name].get());
     }
 
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
@@ -79,15 +103,22 @@ namespace Cascade
 
     void UpdateInputEvents();
     bool WasPressed(const SDL_Scancode &key) { return m_inputs.WasPressed(key); };
-    bool WasPressed(entt::entity entity, int mouse_button);
+    bool WasPressed(entt::entity entity, int mouse_button); // mouse_button: 0 = left, 1 = middle, 2 = right
     bool WasReleased(const SDL_Scancode &key) { return m_inputs.WasReleased(key); };
     bool IsHeld(const SDL_Scancode &key) { return m_inputs.IsHeld(key); };
+
+    void AddActiveScene(std::string scene_name);
+    void RemoveActiveScene(std::string scene_name);
+    void SceneEnd() {m_scene_ending_needed = true;};
 
     std::string GetBasePath() { return m_base_path; };
 
     void SetFPS(int fps) {m_fps = fps; };
 
   private:
+    // Flow Control
+    bool m_continue{true}; // true = continue running game, false = end game
+
     // ECS
     entt::registry m_entt_registry;
     std::map<std::string, std::unique_ptr<System>> m_systems;
@@ -96,6 +127,7 @@ namespace Cascade
     std::string m_base_path;
 
     // Frames
+    bool m_first_frame{true};
     int m_fps{60};
     Uint32 m_frame_start_ticks{0};
     Uint32 m_frame_end_ticks{1};
@@ -104,6 +136,12 @@ namespace Cascade
     // Inputs
     Inputs m_inputs;
     SDL_Event m_event;
+
+    // Scenes
+    std::map<std::string, std::unique_ptr<Scene>> m_scenes; // don't access directly, use GetScene()
+    std::map<std::string, bool> m_active_scenes; // bool is false until scene is loaded
+    bool m_scene_loading_needed{false};
+    bool m_scene_ending_needed{false};
   };
 }
 

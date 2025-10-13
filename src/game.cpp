@@ -13,6 +13,22 @@ Cascade::Game::Game()
 
 Cascade::Game::~Game(){}
 
+void Cascade::Game::Run()
+{
+  while (Continue())
+  {
+    StartFrame();
+    EndFrame();
+  }
+}
+
+void Cascade::Game::Quit()
+{
+  m_continue = false;
+  DestroyAllEntities();
+  SDL_Quit();
+}
+
 entt::entity Cascade::Game::CreateEntity()
 {
   return m_entt_registry.create();
@@ -21,6 +37,11 @@ entt::entity Cascade::Game::CreateEntity()
 void Cascade::Game::DestroyEntity(entt::entity entity)
 {
   m_entt_registry.destroy(entity);
+}
+
+void Cascade::Game::DestroyAllEntities()
+{
+  m_entt_registry.clear();
 }
 
 void Cascade::Game::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
@@ -94,6 +115,21 @@ void Cascade::Game::SetCameraZoom(float zoom)
 
 void Cascade::Game::StartFrame()
 {
+  // Load scenes if needed
+  if (m_scene_loading_needed)
+  {
+    for (const auto &pair : m_active_scenes)
+    {
+      // if scene not loaded, load it
+      if (!pair.second)
+      {
+        GetScene<Scene>(pair.first)->Load(*this);
+      }
+    }
+
+    m_scene_loading_needed = false;
+  }
+
   m_frame_start_ticks = SDL_GetTicks();
   SDL_RenderClear(GetSystem<Graphics>("graphics")->GetRenderer());
 
@@ -103,10 +139,39 @@ void Cascade::Game::StartFrame()
 
 void Cascade::Game::EndFrame()
 {
+  if (!m_continue)
+  {
+    return;
+  }
+
+  // Update all active scenes
+  for (const auto &pair : m_active_scenes)
+  {
+    GetScene<Scene>(pair.first)->Update(*this);
+  }
+
   // Update all systems
   for (const auto& pair : m_systems)
   {
     pair.second->Update(m_entt_registry);
+  }
+
+  // End scenes
+  if (m_scene_ending_needed)
+  {
+    for (const auto &pair : m_active_scenes)
+    {
+      if (m_scenes[pair.first]->m_end_scene)
+      {
+        GetScene<Scene>(pair.first)->Cleanup(*this);
+
+        RemoveActiveScene(pair.first);
+
+        GetScene<Scene>(pair.first)->m_end_scene = false;
+      }
+    }
+
+    m_scene_ending_needed = false;
   }
 
   m_frame_end_ticks = SDL_GetTicks();
@@ -148,4 +213,25 @@ bool Cascade::Game::WasPressed(entt::entity entity, int mouse_button)
 {
   UIElement& ui_element = m_entt_registry.get<UIElement>(entity);
   return ui_element.click_type[mouse_button];
+}
+
+void Cascade::Game::AddActiveScene(std::string scene_name)
+{
+  // Enforce scene can only be added once
+  if (m_active_scenes.find(scene_name) != m_active_scenes.end())
+  {
+    std::cerr << "Cannot add same scene to active scenes more than once!\n";
+    exit(1);
+  }
+
+  // Add scene
+  m_active_scenes[scene_name] = false;
+
+  // Tell game we have a new scene to load
+  m_scene_loading_needed = true;
+}
+
+void Cascade::Game::RemoveActiveScene(std::string scene_name)
+{
+  m_active_scenes.erase(scene_name);
 }
