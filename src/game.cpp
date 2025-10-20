@@ -1,5 +1,9 @@
 #include <iostream>
 
+#include <fstream>
+#include <sstream>
+#include <cmath>
+
 #include "game.hpp"
 
 Cascade::Game::Game()
@@ -47,6 +51,71 @@ void Cascade::Game::DestroyAllEntities()
 void Cascade::Game::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
 {
   GetSystem<Graphics>("graphics")->LoadSpriteSheet(sheet_name, sheet_path);
+}
+
+void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer)
+{
+  // Read tile file and store in tile_data vector of vectors
+  std::ifstream file;
+  file.open(tile_file);
+
+  if (!file.is_open())
+  {
+    std::cerr << "Unable to open " << tile_file << "!\n";
+    exit(1);
+  }
+
+  float sheet_width, sheet_height;
+  GetSystem<Graphics>("graphics")->GetSpriteSheetSize(sprite_sheet_name, sheet_width, sheet_height);
+
+  std::string line;
+  int row{0};
+
+  while (std::getline(file, line))
+  {
+    int col{0};
+    std::stringstream ss(line);
+    while (ss.good())
+    {
+      // Get tile index
+      std::string value_str;
+      std::getline(ss, value_str, ',');
+
+      // Create Tile Entity
+      entt::entity tile = CreateEntity();
+
+      // Set State
+      Cascade::State state;
+      state.X = col * tile_size;
+      state.Y = -row * tile_size;
+      AddComponent(tile, state);
+      
+      // Generate animation name
+      std::string animation_name = sprite_sheet_name + "_" + value_str;
+
+      // If animation for this tile does not already exist, create it
+      if (!GetSystem<Graphics>("graphics")->AnimationExists(animation_name))
+      {
+        CreateAnimation(animation_name, sprite_sheet_name, 0);
+
+        // Determine X and Y coordinates of tile on sprite sheet
+        int sheet_width_in_tiles = sheet_width / tile_size;
+        int sheet_height_in_tiles = sheet_height / tile_size;
+
+        int tile_row = floor(std::stoi(value_str) / sheet_width_in_tiles);
+        int tile_col = std::stoi(value_str) - sheet_width_in_tiles * tile_row;
+        
+        AddFrame(animation_name, (tile_col) * tile_size, (tile_row) * tile_size, tile_size, tile_size);
+      }
+
+      SetCurrentAnimation(tile, animation_name, 0);
+      SetLayer(tile, drawing_layer);
+
+      col++;
+    }
+    row++;
+  }
+  file.close();  
 }
 
 void Cascade::Game::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
@@ -153,7 +222,7 @@ void Cascade::Game::EndFrame()
   // Update all systems
   for (const auto& pair : m_systems)
   {
-    pair.second->Update(m_entt_registry);
+    pair.second->Update(*this);
   }
 
   // End scenes

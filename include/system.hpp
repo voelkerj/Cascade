@@ -11,10 +11,12 @@
 
 namespace Cascade
 {
+  class Game;
+  
   class System
   {
   public:
-    virtual void Update(entt::registry &registry) = 0;
+    virtual void Update(Cascade::Game &cascade) = 0;
   };
 
   struct Camera
@@ -51,7 +53,9 @@ namespace Cascade
     ~Graphics();
 
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
+    void GetSpriteSheetSize(std::string sheet_name, float &width, float &height);
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
+    bool AnimationExists(std::string animation_name);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void SetLayer(entt::registry &registry, entt::entity entity, int layer);
@@ -64,7 +68,7 @@ namespace Cascade
     int GetScreenWidth();
     int GetScreenHeight();
 
-    void Update(entt::registry &registry) override;
+    void Update(Cascade::Game &cascade) override;
     void CalculateDestinations(entt::registry &registry);
     void DrawEntities(entt::registry &registry);
     void UpdateDrawingState(DrawingState& drawing_state);

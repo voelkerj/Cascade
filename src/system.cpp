@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "../include/system.hpp"
+#include "../include/game.hpp"
 #include "../include/components.hpp"
 
 Cascade::Graphics::Graphics()
@@ -57,6 +58,11 @@ void Cascade::Graphics::LoadSpriteSheet(std::string sheet_name, std::string shee
   m_sprite_sheets.emplace(sheet_name, sprite_sheet);
 }
 
+void Cascade::Graphics::GetSpriteSheetSize(std::string sheet_name, float &width, float &height)
+{
+  SDL_GetTextureSize(m_sprite_sheets[sheet_name], &width, &height);
+}
+
 void Cascade::Graphics::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
 {
   Animation new_animation;
@@ -64,6 +70,16 @@ void Cascade::Graphics::CreateAnimation(std::string animation_name, std::string 
   new_animation.update_interval = update_interval;
 
   m_animations.emplace(animation_name, new_animation);
+}
+
+bool Cascade::Graphics::AnimationExists(std::string animation_name)
+{
+  if (m_animations.find(animation_name) == m_animations.end())
+  {
+    return false;
+  }
+
+  return true;
 }
 
 void Cascade::Graphics::AddFrame(std::string animation_name, int x, int y, int w, int h)
@@ -96,7 +112,7 @@ void Cascade::Graphics::SetLayer(entt::registry &registry, entt::entity entity, 
 void Cascade::Graphics::SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior)
 {
   // First check if this is a valid animation name
-  if (m_animations.find(animation_name) == m_animations.end())
+  if (!AnimationExists(animation_name))
   {
     std::cerr << animation_name << " is not a valid animation!\n";
     exit(1);
@@ -152,8 +168,9 @@ int Cascade::Graphics::GetScreenHeight()
   return screen_height;
 }
 
-void Cascade::Graphics::Update(entt::registry &registry)
+void Cascade::Graphics::Update(Cascade::Game &cascade)
 {
+  entt::registry &registry = cascade.GetRegistry();
   UpdateUIAnimations(registry);
   CalculateDestinations(registry);
   DrawEntities(registry);

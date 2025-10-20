@@ -28,6 +28,8 @@ namespace Cascade
     void DestroyEntity(entt::entity entity);
     void DestroyAllEntities();
 
+    entt::registry& GetRegistry(){return m_entt_registry;};
+
     template <typename T>
     void AddComponent(entt::entity entity, T component_data)
     {
@@ -78,6 +80,7 @@ namespace Cascade
     }
 
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
+    void LoadTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer);
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
