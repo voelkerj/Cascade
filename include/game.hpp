@@ -52,7 +52,24 @@ namespace Cascade
         exit(1);
       }
 
-      m_systems.emplace(system_name, std::make_unique<T>(std::forward<Args>(args)...));
+      auto& new_system = m_systems.emplace(system_name, std::make_unique<T>(std::forward<Args>(args)...));
+      new_system->first->second->Load(this*); // Call the system's load function
+    }
+
+    // TODO: Upgrade to use concepts to check base class at compile time
+    template <typename T, typename... Args>
+    void RemoveSystem(std::string system_name, Args... args)
+    {
+      if (!std::is_base_of<System, T>::value)
+      {
+        std::cerr << system_name << " must derive from System class.\n";
+        exit(1);
+      }
+
+      // TODO
+      // Call system's cleanup function
+
+      // erase from map
     }
 
     template <typename T, typename... Args>

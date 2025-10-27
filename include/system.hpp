@@ -16,7 +16,9 @@ namespace Cascade
   class System
   {
   public:
+    virtual void Load(Cascade::Game &cascade) = 0;
     virtual void Update(Cascade::Game &cascade) = 0;
+    virtual void Cleanup(Cascade::Game &cascade) = 0;
   };
 
   struct Camera
