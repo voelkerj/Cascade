@@ -19,11 +19,13 @@ namespace Cascade
 
   class Scene
   {
-  public:
-    virtual void Load(Cascade::Game &cascade) = 0;
-    virtual void Update(Cascade::Game &cascade) = 0;
-    void EndScene(Cascade::Game &cascade);
-    virtual void Cleanup(Cascade::Game &cascade) = 0; // Cleanup function is called automatically when the scene is ended
+  public: 
+    Scene(Cascade::Game &cascade) : m_game(cascade) {};
+
+    virtual void Load() = 0;
+    virtual void Update() = 0;
+    void EndScene();
+    virtual void Cleanup() = 0; // Cleanup function is called automatically when the scene is ended
 
     void TrackEntity(std::string entity_name, entt::entity entity); // entities are just id numbers so we don't mind copying them
     entt::entity GetEntity(std::string entity_name) {return m_tracked_entites[entity_name];};
@@ -33,6 +35,9 @@ namespace Cascade
 
     private:
     std::map<std::string, entt::entity> m_tracked_entites;
+
+    protected:
+    Cascade::Game &m_game;
   };
 }
 

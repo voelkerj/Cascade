@@ -3,8 +3,10 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <bitset>
 
 #include "game.hpp"
+#include "components.hpp"
 
 Cascade::Game::Game()
 {
@@ -53,9 +55,10 @@ void Cascade::Game::LoadSpriteSheet(std::string sheet_name, std::string sheet_pa
   GetSystem<Graphics>("graphics")->LoadSpriteSheet(sheet_name, sheet_path);
 }
 
-void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer)
+std::vector<std::vector<int>> Cascade::Game::ReadTileFile(std::string tile_file)
 {
-  // Read tile file and store in tile_data vector of vectors
+  std::vector<std::vector<int>> tiles;
+
   std::ifstream file;
   file.open(tile_file);
 
@@ -65,22 +68,39 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
     exit(1);
   }
 
-  float sheet_width, sheet_height;
-  GetSystem<Graphics>("graphics")->GetSpriteSheetSize(sprite_sheet_name, sheet_width, sheet_height);
-
   std::string line;
-  int row{0};
-
+  std::string value_str;
   while (std::getline(file, line))
   {
-    int col{0};
+    std::vector<int> tile_row;
+
     std::stringstream ss(line);
     while (ss.good())
     {
       // Get tile index
-      std::string value_str;
       std::getline(ss, value_str, ',');
+      tile_row.push_back(std::stoi(value_str));
+    }
 
+    tiles.push_back(tile_row);
+  }
+
+  file.close();
+
+  return tiles;
+}
+
+void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer)
+{
+  std::vector<std::vector<int>> tiles = ReadTileFile(tile_file);
+
+  float sheet_width, sheet_height;
+  GetSystem<Graphics>("graphics")->GetSpriteSheetSize(sprite_sheet_name, sheet_width, sheet_height);
+
+  for (int row = 0; row < tiles.size(); row++)
+  {
+    for (int col = 0; col < tiles[row].size(); col++)
+    {
       // Create Tile Entity
       entt::entity tile = CreateEntity();
 
@@ -91,7 +111,7 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
       AddComponent(tile, state);
       
       // Generate animation name
-      std::string animation_name = sprite_sheet_name + "_" + value_str;
+      std::string animation_name = sprite_sheet_name + "_" + std::to_string(tiles[row][col]);
 
       // If animation for this tile does not already exist, create it
       if (!GetSystem<Graphics>("graphics")->AnimationExists(animation_name))
@@ -102,20 +122,102 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
         int sheet_width_in_tiles = sheet_width / tile_size;
         int sheet_height_in_tiles = sheet_height / tile_size;
 
-        int tile_row = floor(std::stoi(value_str) / sheet_width_in_tiles);
-        int tile_col = std::stoi(value_str) - sheet_width_in_tiles * tile_row;
+        int tile_row = floor(tiles[row][col] / sheet_width_in_tiles);
+        int tile_col = tiles[row][col] - sheet_width_in_tiles * tile_row;
         
         AddFrame(animation_name, (tile_col) * tile_size, (tile_row) * tile_size, tile_size, tile_size);
       }
 
       SetCurrentAnimation(tile, animation_name, 0);
       SetLayer(tile, drawing_layer);
-
-      col++;
     }
-    row++;
+  } 
+}
+
+void Cascade::Game::SetColliderTiles(std::string tile_file, int tile_size, std::vector<int> collider_tiles)
+{
+  std::vector<std::vector<int>> tiles = ReadTileFile(tile_file);
+
+  // For each tile
+  for (int row = 0; row < tiles.size(); row++)
+  {
+    for (int col = 0; col < tiles[row].size(); col++)
+    {
+      auto it = std::find(collider_tiles.begin(), collider_tiles.end(), tiles[row][col]);
+
+      if (it != collider_tiles.end())
+      {
+
+        bool is_collider{false};
+
+        // Check North
+        if (row > 0 && !is_collider)
+        {
+          auto it = std::find(collider_tiles.begin(), collider_tiles.end(), tiles[row - 1][col]);
+
+          if (it == collider_tiles.end())
+          {
+            is_collider = true;
+          }
+        }
+
+        // Check South
+        if (row < tiles.size() - 1 && !is_collider)
+        {
+          auto it = std::find(collider_tiles.begin(), collider_tiles.end(), tiles[row + 1][col]);
+
+          if (it == collider_tiles.end())
+          {
+            is_collider = true;
+          }
+        }
+
+        // Check East
+        if (col < tiles[row].size() - 1 && !is_collider)
+        {
+          auto it = std::find(collider_tiles.begin(), collider_tiles.end(), tiles[row][col + 1]);
+
+          if (it == collider_tiles.end())
+          {
+            is_collider = true;
+          }
+        }
+
+        // Check West
+        if (col > 0 && !is_collider)
+        {
+          auto it = std::find(collider_tiles.begin(), collider_tiles.end(), tiles[row][col - 1]);
+
+          if (it == collider_tiles.end())
+          {
+            is_collider = true;
+          }
+        }
+
+        if (is_collider)
+        {
+          // Find entity for this tile
+          // Find and store reference to player
+          auto view = GetRegistry().view<const State>();
+
+          for (auto [entity, state] : view.each())
+          {
+            if (state.X == col * tile_size && state.Y == -row * tile_size)
+            {
+              NonRotatingCollider collider;
+              collider.static_collider = true;
+              collider.X = state.X;
+              collider.Y = state.Y;
+              collider.width = tile_size;
+              collider.height = tile_size;
+              AddComponent<NonRotatingCollider>(entity, collider);
+              break;
+            }
+          }
+        }
+      }
+    }
   }
-  file.close();  
 }
 
 void Cascade::Game::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
@@ -138,6 +240,11 @@ void Cascade::Game::SetCurrentAnimation(entt::entity entity, std::string animati
   GetSystem<Graphics>("graphics")->SetCurrentAnimation(m_entt_registry, entity, animation_name, end_behavior);
 }
 
+std::string Cascade::Game::GetCurrentAnimation(entt::entity entity)
+{
+  return GetSystem<Graphics>("graphics")->GetCurrentAnimation(m_entt_registry, entity);
+}
+
 void Cascade::Game::SetColor(entt::entity entity, int color[3])
 {
   Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
@@ -145,6 +252,42 @@ void Cascade::Game::SetColor(entt::entity entity, int color[3])
   drawing_state.color[0] = color[0];
   drawing_state.color[1] = color[1];
   drawing_state.color[2] = color[2];
+}
+
+void Cascade::Game::FlipHorizontal(entt::entity entity)
+{
+  Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
+  if (drawing_state.flip == SDL_FLIP_NONE)
+    drawing_state.flip = SDL_FLIP_HORIZONTAL;
+  if (drawing_state.flip == SDL_FLIP_VERTICAL)
+    drawing_state.flip = SDL_FLIP_HORIZONTAL_AND_VERTICAL;
+}
+
+void Cascade::Game::FlipVertical(entt::entity entity)
+{
+  Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
+  if (drawing_state.flip == SDL_FLIP_NONE)
+    drawing_state.flip = SDL_FLIP_VERTICAL;
+  if (drawing_state.flip == SDL_FLIP_HORIZONTAL)
+    drawing_state.flip = SDL_FLIP_HORIZONTAL_AND_VERTICAL;
+}
+
+void Cascade::Game::ResetFlipHorizontal(entt::entity entity)
+{
+  Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
+  if (drawing_state.flip == SDL_FLIP_HORIZONTAL)
+    drawing_state.flip = SDL_FLIP_NONE;
+  if (drawing_state.flip == SDL_FLIP_HORIZONTAL_AND_VERTICAL)
+    drawing_state.flip = SDL_FLIP_VERTICAL;
+}
+
+void Cascade::Game::ResetFlipVertical(entt::entity entity)
+{
+  Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
+  if (drawing_state.flip == SDL_FLIP_VERTICAL)
+    drawing_state.flip = SDL_FLIP_NONE;
+  if (drawing_state.flip == SDL_FLIP_HORIZONTAL_AND_VERTICAL)
+    drawing_state.flip = SDL_FLIP_HORIZONTAL;
 }
 
 void Cascade::Game::ResetColor(entt::entity entity)
@@ -182,6 +325,102 @@ void Cascade::Game::SetCameraZoom(float zoom)
   GetSystem<Graphics>("graphics")->SetCameraZoom(zoom);
 }
 
+void Cascade::Game::SetCameraPosition(float position[2])
+{
+  GetSystem<Graphics>("graphics")->SetCameraPosition(position);
+}
+
+void Cascade::Game::UpdateCollider(entt::entity entity)
+{
+  // Make sure this entity has a collider
+  if (auto collider = m_entt_registry.try_get<NonRotatingCollider>(entity))
+  {
+    // Make sure this entity has a state
+    if (auto state = m_entt_registry.try_get<State>(entity))
+    {
+      collider->X = state->X;
+      collider->Y = state->Y;
+    } else {
+      std::cerr << "Requested entity does not have a state!\n";
+      exit(1);
+    }
+  } else {
+    std::cerr << "Requested entity does not have a collider!\n";
+    exit(1);
+  }
+}
+
+float tolerance = 1;
+
+std::bitset<4> Cascade::Game::GetAABBCollisions(entt::entity entity_1)
+{  
+  std::bitset<4> return_value{0000};
+  // Make sure this entity has a collider
+  if (auto collider_1 = m_entt_registry.try_get<NonRotatingCollider>(entity_1))
+  {
+    UpdateCollider(entity_1);
+
+    auto view = m_entt_registry.view<NonRotatingCollider>();
+
+    for (auto [entity_2, collider_2] : view.each())
+    {
+      if (entity_1 != entity_2)
+      {
+        if (collider_1->X - collider_1->width / 2  < (collider_2.X + collider_2.width / 2) * tolerance &&   // C1 left wall is to the left of C2 right wall
+            collider_1->X + collider_1->width / 2  > (collider_2.X - collider_2.width / 2) * tolerance &&   // C1 right wall is to the right of C2 left wall
+            collider_1->Y + collider_1->height / 2 > (collider_2.Y - collider_2.height / 2) * tolerance && // C1 bottom wall is below C2 top wall
+            collider_1->Y - collider_1->height / 2 < (collider_2.Y + collider_2.height / 2) * tolerance)   // C1 top wall is above C2 bottom wall
+        {
+          // Collision detected
+          
+          // Determine X and Y overlap
+          float x_overlap = (collider_1->width / 2 + collider_2.width / 2) - std::abs(collider_1->X - collider_2.X);
+          float y_overlap = (collider_1->height / 2 + collider_2.height / 2) - std::abs(collider_1->Y - collider_2.Y);
+
+          State& state_1 = m_entt_registry.get<State>(entity_1);
+
+          if (x_overlap < y_overlap)
+          {
+            // Horizontal Collision
+            if (!return_value[0] && collider_1->X > collider_2.X) // West Collision
+            {
+
+              return_value[0] = true;
+              state_1.X = collider_2.X + collider_2.width / 2 + (collider_1->width / 2);
+
+            } else if (!return_value[1]) { // East Collision
+
+              return_value[1] = true;
+              state_1.X = collider_2.X - collider_2.width / 2 - (collider_1->width / 2);
+
+            }
+          } else {
+            // Vertical Collision
+            if (!return_value[2] && collider_1->Y < collider_2.Y) // South Collision
+            {
+
+              return_value[2] = true;
+              state_1.Y = collider_2.Y - collider_2.height / 2 - (collider_1->height / 2);
+              
+            } else if (!return_value[3]) { // North Collision
+
+              return_value[3] = true;
+              state_1.Y = collider_2.Y + collider_2.height / 2 + (collider_1->height / 2);
+              
+            }
+          }
+          UpdateCollider(entity_1);
+        }
+      }
+    }
+  } else {
+    std::cerr << "Requested entity does not have a collider!\n";
+    exit(1);
+  }
+
+  return return_value;
+}
+
 void Cascade::Game::StartFrame()
 {
   // Load scenes if needed
@@ -192,7 +431,7 @@ void Cascade::Game::StartFrame()
       // if scene not loaded, load it
       if (!pair.second)
       {
-        GetScene<Scene>(pair.first)->Load(*this);
+        GetScene<Scene>(pair.first)->Load();
       }
     }
 
@@ -216,13 +455,13 @@ void Cascade::Game::EndFrame()
   // Update all active scenes
   for (const auto &pair : m_active_scenes)
   {
-    GetScene<Scene>(pair.first)->Update(*this);
+    GetScene<Scene>(pair.first)->Update();
   }
 
   // Update all systems
   for (const auto& pair : m_systems)
   {
-    pair.second->Update(*this);
+    pair.second->Update();
   }
 
   // End scenes
@@ -232,11 +471,7 @@ void Cascade::Game::EndFrame()
     {
       if (m_scenes[pair.first]->m_end_scene)
       {
-        GetScene<Scene>(pair.first)->Cleanup(*this);
-
         RemoveActiveScene(pair.first);
-
-        GetScene<Scene>(pair.first)->m_end_scene = false;
       }
     }
 
@@ -302,5 +537,7 @@ void Cascade::Game::AddActiveScene(std::string scene_name)
 
 void Cascade::Game::RemoveActiveScene(std::string scene_name)
 {
+  GetScene<Scene>(scene_name)->Cleanup();
+  GetScene<Scene>(scene_name)->m_end_scene = false;
   m_active_scenes.erase(scene_name);
 }

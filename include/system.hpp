@@ -16,9 +16,13 @@ namespace Cascade
   class System
   {
   public:
-    virtual void Load(Cascade::Game &cascade) = 0;
-    virtual void Update(Cascade::Game &cascade) = 0;
-    virtual void Cleanup(Cascade::Game &cascade) = 0;
+    System(Cascade::Game &cascade) : m_game(cascade) {};
+    virtual void Load() = 0;
+    virtual void Update() = 0;
+    virtual void Cleanup() = 0;
+
+    protected:
+    Cascade::Game &m_game;
   };
 
   struct Camera
@@ -51,9 +55,13 @@ namespace Cascade
   class Graphics : public System
   {
   public:
-    Graphics();
-    ~Graphics();
+    using System::System;
 
+    void Load() override;
+    void Update() override;
+    void Cleanup() override;
+
+    void UpdateCamera();
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
     void GetSpriteSheetSize(std::string sheet_name, float &width, float &height);
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
@@ -61,20 +69,24 @@ namespace Cascade
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void SetLayer(entt::registry &registry, entt::entity entity, int layer);
+    void SetDrawColliders(bool draw_colliders);
 
     void SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior);
+    std::string GetCurrentAnimation(entt::registry &registry, entt::entity entity);
 
     float GetCameraZoom() { return m_camera.zoom; };
     void SetCameraZoom(float zoom);
+    void SetCameraPosition(float position[2]);
 
     int GetScreenWidth();
     int GetScreenHeight();
+    std::vector<float> ConvertWCStoScreenCoords(float point[2]);
 
-    void Update(Cascade::Game &cascade) override;
     void CalculateDestinations(entt::registry &registry);
     void DrawEntities(entt::registry &registry);
+    void DrawColliders(entt::registry &registry);
     void UpdateDrawingState(DrawingState& drawing_state);
-    void DrawLine(float a[2], float b[2], int color[4]);
+    void DrawLineWCS(float a[2], float b[2], int color[4]);
 
     void UpdateUIAnimations(entt::registry &registry);
 
@@ -88,6 +100,7 @@ namespace Cascade
     float m_scale[2]; // X & Y scale
     std::map<std::string, SDL_Texture *> m_sprite_sheets;
     std::unordered_map<std::string, Animation> m_animations;
+    bool m_draw_colliders{false};
   };
 }
 

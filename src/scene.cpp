@@ -7,8 +7,8 @@ void Cascade::Scene::TrackEntity(std::string entity_name, entt::entity entity)
 }
 
 // The definition of Cascade::Game is needed for the EndScene function.
-void Cascade::Scene::EndScene(Cascade::Game &cascade)
+void Cascade::Scene::EndScene() 
 {
-  cascade.SceneEnd();
+  m_game.SceneEnd();
   m_end_scene = true;
 }

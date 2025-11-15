@@ -4,7 +4,7 @@
 #include "../include/game.hpp"
 #include "../include/components.hpp"
 
-Cascade::Graphics::Graphics()
+void Cascade::Graphics::Load()
 {
   // Initialize Window
   m_window = SDL_CreateWindow("Cascade", 0, 0, SDL_WINDOW_FULLSCREEN);
@@ -26,20 +26,41 @@ Cascade::Graphics::Graphics()
 
   // Initialize Camera
   SDL_GetWindowSize(m_window, &m_window_size[0], &m_window_size[1]);
-  int screen_width, screen_height;
-  SDL_GetCurrentRenderOutputSize(m_renderer, &screen_width, &screen_height);
-
+  
   m_camera.pos[0] = 0;
   m_camera.pos[1] = 0;
+  UpdateCamera();
+}
+
+void Cascade::Graphics::Cleanup()
+{
+  SDL_DestroyWindow(m_window);
+}
+
+void Cascade::Graphics::Update()
+{
+  entt::registry &registry = m_game.GetRegistry();
+  UpdateUIAnimations(registry);
+  CalculateDestinations(registry);
+  DrawEntities(registry);
+  
+  if (m_draw_colliders)
+  {
+    DrawColliders(registry);
+  }
+
+  SDL_SetRenderDrawColor(m_renderer, 0x01, 0x06, 0x0d, 0xFF);
+  SDL_RenderPresent(m_renderer);
+}
+
+void Cascade::Graphics::UpdateCamera()
+{
+  int screen_width, screen_height;
+  SDL_GetCurrentRenderOutputSize(m_renderer, &screen_width, &screen_height);
   m_camera.FOV[0] = screen_width / m_camera.zoom;
   m_camera.FOV[1] = screen_height / m_camera.zoom;
   m_scale[0] = m_window_size[0] / m_camera.FOV[0];
   m_scale[1] = m_window_size[1] / m_camera.FOV[1];
-}
-
-Cascade::Graphics::~Graphics()
-{
-  SDL_DestroyWindow(m_window);
 }
 
 void Cascade::Graphics::LoadSpriteSheet(std::string sheet_name, std::string sheet_path)
@@ -109,6 +130,11 @@ void Cascade::Graphics::SetLayer(entt::registry &registry, entt::entity entity, 
   }
 }
 
+void Cascade::Graphics::SetDrawColliders(bool draw_colliders)
+{
+  m_draw_colliders = draw_colliders;
+}
+
 void Cascade::Graphics::SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior)
 {
   // First check if this is a valid animation name
@@ -142,6 +168,16 @@ void Cascade::Graphics::SetCurrentAnimation(entt::registry &registry, entt::enti
   registry.emplace<DrawingState>(entity, new_drawing_state);
 }
 
+std::string Cascade::Graphics::GetCurrentAnimation(entt::registry &registry, entt::entity entity)
+{
+  if (auto drawing_state = registry.try_get<DrawingState>(entity))
+  {
+    return drawing_state->animation_name;
+  }
+
+  return "";
+}
+
 void Cascade::Graphics::SetCameraZoom(float zoom)
 {
   m_camera.zoom = zoom;
@@ -152,6 +188,13 @@ void Cascade::Graphics::SetCameraZoom(float zoom)
   m_camera.FOV[1] = screen_height / m_camera.zoom;
   m_scale[0] = m_window_size[0] / m_camera.FOV[0];
   m_scale[1] = m_window_size[1] / m_camera.FOV[1];
+}
+
+void Cascade::Graphics::SetCameraPosition(float position[2])
+{
+  m_camera.pos[0] = position[0];
+  m_camera.pos[1] = position[1];
+  UpdateCamera();
 }
 
 int Cascade::Graphics::GetScreenWidth()
@@ -168,14 +211,14 @@ int Cascade::Graphics::GetScreenHeight()
   return screen_height;
 }
 
-void Cascade::Graphics::Update(Cascade::Game &cascade)
+std::vector<float> Cascade::Graphics::ConvertWCStoScreenCoords(float point[2])
 {
-  entt::registry &registry = cascade.GetRegistry();
-  UpdateUIAnimations(registry);
-  CalculateDestinations(registry);
-  DrawEntities(registry);
-  SDL_SetRenderDrawColor(m_renderer, 0x01, 0x06, 0x0d, 0xFF);
-  SDL_RenderPresent(m_renderer);
+  std::vector<float> screen_coords;
+
+  screen_coords.push_back((point[0] - (m_camera.pos[0] - (m_camera.FOV[0] / 2)))  * m_scale[0]);
+  screen_coords.push_back(m_window_size[1] - (point[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1]); // - (clipping_rect.h * m_scale[1]
+
+  return screen_coords;
 }
 
 void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
@@ -188,8 +231,13 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     // Get clipping rectangle based on frame index
     SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
 
-    drawing_state.destination_rect.x = (state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2 - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
-    drawing_state.destination_rect.y = m_window_size[1] - (state.Y + m_animations[drawing_state.animation_name].offset[1] - clipping_rect.h / 2 - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1] - (clipping_rect.h * m_scale[1]);
+    float point[2]{state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
+                   state.Y + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
+
+    std::vector<float> coords = ConvertWCStoScreenCoords(point);
+
+    drawing_state.destination_rect.x = coords[0];
+    drawing_state.destination_rect.y = coords[1];
     drawing_state.destination_rect.w = clipping_rect.w * state.ScaleX * m_scale[0];
     drawing_state.destination_rect.h = clipping_rect.h * state.ScaleY * m_scale[1];
 
@@ -254,10 +302,32 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
     std::string sprite_sheet_name = m_animations[drawing_state.animation_name].sprite_sheet;
 
     if (drawing_state.enable_tint)
+    {
       SDL_SetTextureColorMod(m_sprite_sheets[sprite_sheet_name], drawing_state.color[0], drawing_state.color[1], drawing_state.color[2]);
+    }
 
     SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &drawing_state.destination_rect,
-                             drawing_state.angle, NULL, SDL_FLIP_NONE);
+                             drawing_state.angle, NULL, drawing_state.flip);
+  }
+}
+
+void Cascade::Graphics::DrawColliders(entt::registry &registry)
+{
+  int color[4]{255, 0, 255, 0};
+
+  auto view = registry.view<const NonRotatingCollider, State>();
+
+  for (auto [entity, collider, state] : view.each())
+  {
+    float top_left[2] {collider.X - collider.width / 2, collider.Y - collider.height / 2};
+    float top_right[2]{collider.X + collider.width / 2, collider.Y - collider.height / 2};
+    float bot_left[2] {collider.X - collider.width / 2, collider.Y + collider.height / 2};
+    float bot_right[2]{collider.X + collider.width / 2, collider.Y + collider.height / 2};
+
+    DrawLineWCS(top_left, top_right, color);
+    DrawLineWCS(top_right, bot_right, color);
+    DrawLineWCS(bot_right, bot_left, color);
+    DrawLineWCS(bot_left, top_left, color);
   }
 }
 
@@ -289,17 +359,14 @@ void Cascade::Graphics::UpdateDrawingState(DrawingState &drawing_state)
   }
 }
 
-void Cascade::Graphics::DrawLine(float a[2], float b[2], int color[4])
+void Cascade::Graphics::DrawLineWCS(float a[2], float b[2], int color[4])
 {
-  float a_x = (a[0] - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
-  float a_y = m_window_size[1] - (a[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1];
-
-  float b_x = (b[0] - (m_camera.pos[0] - (m_camera.FOV[0] / 2))) * m_scale[0];
-  float b_y = m_window_size[1] - (b[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1];
+  std::vector<float> start = ConvertWCStoScreenCoords(a);
+  std::vector<float> end = ConvertWCStoScreenCoords(b);
 
   SDL_SetRenderDrawColor(m_renderer, color[0], color[1], color[2], color[3]);
 
-  SDL_RenderLine(m_renderer, a_x, a_y, b_x, b_y);
+  SDL_RenderLine(m_renderer, start[0], start[1], end[0], end[1]);
 }
 
 void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)

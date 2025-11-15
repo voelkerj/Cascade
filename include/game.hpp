@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <concepts>
+#include <bitset>
 
 #include "../external/entt/entt.hpp"
 #include "system.hpp"
@@ -42,6 +43,12 @@ namespace Cascade
       m_entt_registry.remove<T>(entity);
     }
 
+    template <typename T>
+    T &GetComponent(entt::entity entity)
+    {
+      return m_entt_registry.get<T>(entity);
+    }
+
     // TODO: Upgrade to use concepts to check base class at compile time
     template <typename T, typename... Args>
     void AddSystem(std::string system_name, Args... args)
@@ -52,8 +59,8 @@ namespace Cascade
         exit(1);
       }
 
-      auto& new_system = m_systems.emplace(system_name, std::make_unique<T>(std::forward<Args>(args)...));
-      new_system->first->second->Load(this*); // Call the system's load function
+      auto new_system = m_systems.emplace(system_name, std::make_unique<T>(*this, std::forward<Args>(args)...));
+      new_system.first->second->Load(); // Call the system's load function
     }
 
     // TODO: Upgrade to use concepts to check base class at compile time
@@ -66,10 +73,12 @@ namespace Cascade
         exit(1);
       }
 
-      // TODO
       // Call system's cleanup function
+      T* system = GetSystem<T>(system_name);
+      system->Cleanup();
 
-      // erase from map
+      // Erase from map
+      m_systems.erase(system_name);
     }
 
     template <typename T, typename... Args>
@@ -81,7 +90,7 @@ namespace Cascade
         exit(1);
       }
 
-      m_scenes.emplace(scene_name, std::make_unique<T>(std::forward<Args>(args)...));
+      m_scenes.emplace(scene_name, std::make_unique<T>(*this, std::forward<Args>(args)...));
     }
 
     template <typename T>
@@ -97,21 +106,33 @@ namespace Cascade
     }
 
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
+    std::vector<std::vector<int>> ReadTileFile(std::string tile_file);
     void LoadTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer);
+    void SetColliderTiles(std::string tile_file, int tile_width, std::vector<int> collider_tiles);
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
     void SetCurrentAnimation(entt::entity entity, std::string animation_name, int end_behavior);
+    std::string GetCurrentAnimation(entt::entity entity);
     void SetLayer(entt::entity entity, int layer){ GetSystem<Graphics>("graphics")->SetLayer(m_entt_registry, entity, layer); };
     void SetColor(entt::entity entity, int color[3]);
+    void FlipHorizontal(entt::entity entity);
+    void FlipVertical(entt::entity entity);
+    void ResetFlipHorizontal(entt::entity entity);
+    void ResetFlipVertical(entt::entity entity);
     void ResetColor(entt::entity entity);
-    void DrawLine(float a[2], float b[2], int color[4]) { GetSystem<Graphics>("graphics")->DrawLine(a, b, color); };
+    void SetDrawColliders(bool draw_colliders) { GetSystem<Graphics>("graphics")->SetDrawColliders(draw_colliders); }; 
+    void DrawLineWCS(float a[2], float b[2], int color[4]) { GetSystem<Graphics>("graphics")->DrawLineWCS(a, b, color); };
 
     void SetHoverAnimation(entt::entity button, std::string animation_name);
     void SetClickAnimation(entt::entity button, std::string animation_name);
 
     float GetCameraZoom() { return GetSystem<Graphics>("graphics")->GetCameraZoom(); };
     void SetCameraZoom(float zoom);
+    void SetCameraPosition(float position[2]);
+
+    void UpdateCollider(entt::entity entity);
+    std::bitset<4> GetAABBCollisions(entt::entity entity_1);
 
     int GetScreenWidth(){return GetSystem<Graphics>("graphics")->GetScreenWidth();};
     int GetScreenHeight(){return GetSystem<Graphics>("graphics")->GetScreenHeight();};

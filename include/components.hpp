@@ -27,6 +27,7 @@ namespace Cascade
     std::string default_animation_name;
     SDL_FRect destination_rect;
     float angle{0};
+    SDL_FlipMode flip{SDL_FLIP_NONE};
   };
 
   struct UIElement
@@ -39,6 +40,15 @@ namespace Cascade
     std::string hover_animation{""};
     std::string click_animation{""};
     bool click_animation_done{true};
+  };
+
+  struct NonRotatingCollider
+  {
+    bool static_collider{false};
+    float X{0};
+    float Y{0};
+    float width{1};
+    float height{1};
   };
 }
 

@@ -9,9 +9,9 @@ float Cascade::RandInRange(float min, float max)
   return distribution(generator);
 }
 
-float Cascade::Distance(const State state1, const State state2)
+float Cascade::Distance(const State state_1, const State state_2)
 {
-  return sqrt(pow(state2.X - state1.X, 2) + pow(state2.Y - state1.Y, 2));
+  return sqrt(pow(state_2.X - state_1.X, 2) + pow(state_2.Y - state_1.Y, 2));
 }
 
 float Cascade::Dot(const float v1[2], const float v2[2])
