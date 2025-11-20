@@ -63,10 +63,13 @@ namespace Cascade
 
     void UpdateCamera();
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
+    void StoreSpriteSheet(std::string sheet_name, SDL_Texture *sprite_sheet);
     void GetSpriteSheetSize(std::string sheet_name, float &width, float &height);
+    SDL_Texture* GetSpriteSheet(std::string sheet_name) { return m_sprite_sheets[sheet_name]; };
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
     bool AnimationExists(std::string animation_name);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);
+    SDL_FRect &GetFrame(std::string animation_name, int frame_idx) { return m_animations[animation_name].frames[frame_idx]; };
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void SetLayer(entt::registry &registry, entt::entity entity, int layer);
     void SetDrawColliders(bool draw_colliders);
@@ -91,6 +94,7 @@ namespace Cascade
     void UpdateUIAnimations(entt::registry &registry);
 
     SDL_Renderer *GetRenderer() { return m_renderer; };
+    SDL_Window *GetWindow() { return m_window; };
 
   private:
     SDL_Window *m_window;

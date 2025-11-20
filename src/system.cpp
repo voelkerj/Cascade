@@ -74,8 +74,12 @@ void Cascade::Graphics::LoadSpriteSheet(std::string sheet_name, std::string shee
     exit(1);    
   }
 
-  SDL_SetTextureScaleMode(sprite_sheet, SDL_SCALEMODE_NEAREST); // use nearest pixel scaling
+  StoreSpriteSheet(sheet_name, sprite_sheet);
+}
 
+void Cascade::Graphics::StoreSpriteSheet(std::string sheet_name, SDL_Texture *sprite_sheet)
+{
+  SDL_SetTextureScaleMode(sprite_sheet, SDL_SCALEMODE_NEAREST); // use nearest pixel scaling
   m_sprite_sheets.emplace(sheet_name, sprite_sheet);
 }
 
@@ -125,9 +129,17 @@ void Cascade::Graphics::SetLayer(entt::registry &registry, entt::entity entity, 
   if (auto drawing_state = registry.try_get<DrawingState>(entity))
   {
     drawing_state->layer = layer;
-
     return;
   }
+}
+
+void Cascade::Game::SortDrawingLayers()
+{
+  // Sort registry by layer
+  m_entt_registry.sort<DrawingState>([](const DrawingState &a, const DrawingState &b)
+  {
+  return a.layer > b.layer;
+  });
 }
 
 void Cascade::Graphics::SetDrawColliders(bool draw_colliders)
@@ -223,18 +235,21 @@ std::vector<float> Cascade::Graphics::ConvertWCStoScreenCoords(float point[2])
 
 void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
 {
+  SDL_FRect clipping_rect;
+  std::vector<float> coords;
+
   // World Entities
   auto view = registry.view<DrawingState, const State>();
 
   for (auto [entity, drawing_state, state] : view.each())
   {
     // Get clipping rectangle based on frame index
-    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
+    clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
 
     float point[2]{state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
                    state.Y + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
 
-    std::vector<float> coords = ConvertWCStoScreenCoords(point);
+    coords = ConvertWCStoScreenCoords(point);
 
     drawing_state.destination_rect.x = coords[0];
     drawing_state.destination_rect.y = coords[1];
@@ -250,7 +265,7 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
   for (auto [entity, drawing_state, ui_element] : view2.each())
   {
     // Get clipping rectangle based on frame index
-    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx]; 
+    clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx]; 
 
     // Check if we need to change size
     if (ui_element.size[0] == 0)
@@ -283,11 +298,7 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
 
 void Cascade::Graphics::DrawEntities(entt::registry &registry)
 {
-  // First we sort by layer
-  registry.sort<DrawingState>([](const DrawingState &a, const DrawingState &b)
-  {
-    return a.layer > b.layer;
-  });
+  SDL_FRect clipping_rect;
 
   auto view = registry.view<DrawingState>();
 
@@ -295,18 +306,14 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
   {
     UpdateDrawingState(drawing_state);
 
-    SDL_FRect clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx]; 
-
-    // TODO: Not necessary to allocate a string here for every animation, every frame.
-    //       But it sure does help with readability.
-    std::string sprite_sheet_name = m_animations[drawing_state.animation_name].sprite_sheet;
+    clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx]; 
 
     if (drawing_state.enable_tint)
     {
-      SDL_SetTextureColorMod(m_sprite_sheets[sprite_sheet_name], drawing_state.color[0], drawing_state.color[1], drawing_state.color[2]);
+      SDL_SetTextureColorMod(m_sprite_sheets[m_animations[drawing_state.animation_name].sprite_sheet], drawing_state.color[0], drawing_state.color[1], drawing_state.color[2]);
     }
 
-    SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[sprite_sheet_name], &clipping_rect, &drawing_state.destination_rect,
+    SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[m_animations[drawing_state.animation_name].sprite_sheet], &clipping_rect, &drawing_state.destination_rect,
                              drawing_state.angle, NULL, drawing_state.flip);
   }
 }

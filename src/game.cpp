@@ -97,11 +97,20 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
   float sheet_width, sheet_height;
   GetSystem<Graphics>("graphics")->GetSpriteSheetSize(sprite_sheet_name, sheet_width, sheet_height);
 
+  // Set up temporary render target (texture) to draw the tiles to
+  // This is done for efficiency purposes. Instead of having each drawable tile as a seperate entity that must be 
+  // individually re-drawn every frame, we blit them all to a single texture that is drawn a single time every frame.
+  SDL_Renderer *renderer = GetSystem<Graphics>("graphics")->GetRenderer();
+  SDL_Window *window = GetSystem<Graphics>("graphics")->GetWindow();
+  SDL_Texture *tile_texture = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, tiles[0].size() * tile_size, tiles.size() * tile_size);
+  SDL_SetRenderTarget(renderer, tile_texture);
+
   for (int row = 0; row < tiles.size(); row++)
   {
     for (int col = 0; col < tiles[row].size(); col++)
     {
       // Create Tile Entity
+      // We still want this in case we wish to do anything with the tiles besides drawing them (such as colliders)
       entt::entity tile = CreateEntity();
 
       // Set State
@@ -128,10 +137,52 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
         AddFrame(animation_name, (tile_col) * tile_size, (tile_row) * tile_size, tile_size, tile_size);
       }
 
-      SetCurrentAnimation(tile, animation_name, 0);
-      SetLayer(tile, drawing_layer);
+      SDL_Texture *source_sprite_sheet = GetSystem<Graphics>("graphics")->GetSpriteSheet(sprite_sheet_name);
+      SDL_FRect frame = GetSystem<Graphics>("graphics")->GetFrame(animation_name, 0);
+      SDL_FRect destination;
+      destination.x = col * tile_size;
+      destination.y = row * tile_size;
+      destination.w = tile_size;
+      destination.h = tile_size;
+
+      SDL_RenderTextureRotated(renderer, source_sprite_sheet, &frame, &destination, 0, NULL, SDL_FLIP_NONE);
+
+      // SetCurrentAnimation(tile, animation_name, 0);
+      // SetLayer(tile, drawing_layer);
     }
-  } 
+  }
+
+  // Setup tile layer entity
+  entt::entity tile_layer = CreateEntity();
+
+  // Extract filename from tile_file path
+  // Find the last path separator
+  size_t last_slash = tile_file.find_last_of("/\\");
+  std::string tile_layer_filename = (last_slash == std::string::npos) ? tile_file : tile_file.substr(last_slash + 1);
+
+  // Remove the file extension
+  size_t last_dot = tile_layer_filename.rfind('.');
+  if (last_dot != std::string::npos) {
+    tile_layer_filename = tile_layer_filename.substr(0, last_dot);
+  }
+
+  // Store the tile texture as a new sprite sheet
+  GetSystem<Graphics>("graphics")->StoreSpriteSheet(tile_layer_filename, tile_texture);
+
+  // Use it as an animation for the tile_layer entity
+  CreateAnimation(tile_layer_filename, tile_layer_filename, 0);
+  GetSystem<Graphics>("graphics")->GetSpriteSheetSize(tile_layer_filename, sheet_width, sheet_height);
+  AddFrame(tile_layer_filename, 0, 0, sheet_width, sheet_height);
+  SetCurrentAnimation(tile_layer, tile_layer_filename, 0);
+  SetLayer(tile_layer, drawing_layer);
+
+  State tile_layer_state;
+  tile_layer_state.X = sheet_width / 2 - tile_size / 2;
+  tile_layer_state.Y = -sheet_height / 2 + tile_size / 2;
+  AddComponent(tile_layer, tile_layer_state);
+
+  // Return rendering back to the window
+  SDL_SetRenderTarget(renderer, NULL);
 }
 
 void Cascade::Game::SetColliderTiles(std::string tile_file, int tile_size, std::vector<int> collider_tiles)
@@ -350,8 +401,6 @@ void Cascade::Game::UpdateCollider(entt::entity entity)
   }
 }
 
-float tolerance = 1;
-
 std::bitset<4> Cascade::Game::GetAABBCollisions(entt::entity entity_1)
 {  
   std::bitset<4> return_value{0000};
@@ -366,10 +415,10 @@ std::bitset<4> Cascade::Game::GetAABBCollisions(entt::entity entity_1)
     {
       if (entity_1 != entity_2)
       {
-        if (collider_1->X - collider_1->width / 2  < (collider_2.X + collider_2.width / 2) * tolerance &&   // C1 left wall is to the left of C2 right wall
-            collider_1->X + collider_1->width / 2  > (collider_2.X - collider_2.width / 2) * tolerance &&   // C1 right wall is to the right of C2 left wall
-            collider_1->Y + collider_1->height / 2 > (collider_2.Y - collider_2.height / 2) * tolerance && // C1 bottom wall is below C2 top wall
-            collider_1->Y - collider_1->height / 2 < (collider_2.Y + collider_2.height / 2) * tolerance)   // C1 top wall is above C2 bottom wall
+        if (collider_1->X - collider_1->width / 2  < (collider_2.X + collider_2.width / 2) &&   // C1 left wall is to the left of C2 right wall
+            collider_1->X + collider_1->width / 2  > (collider_2.X - collider_2.width / 2) &&   // C1 right wall is to the right of C2 left wall
+            collider_1->Y + collider_1->height / 2 > (collider_2.Y - collider_2.height / 2) && // C1 bottom wall is below C2 top wall
+            collider_1->Y - collider_1->height / 2 < (collider_2.Y + collider_2.height / 2))   // C1 top wall is above C2 bottom wall
         {
           // Collision detected
           

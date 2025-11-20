@@ -115,6 +115,7 @@ namespace Cascade
     void SetCurrentAnimation(entt::entity entity, std::string animation_name, int end_behavior);
     std::string GetCurrentAnimation(entt::entity entity);
     void SetLayer(entt::entity entity, int layer){ GetSystem<Graphics>("graphics")->SetLayer(m_entt_registry, entity, layer); };
+    void SortDrawingLayers();
     void SetColor(entt::entity entity, int color[3]);
     void FlipHorizontal(entt::entity entity);
     void FlipVertical(entt::entity entity);
