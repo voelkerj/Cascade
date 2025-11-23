@@ -102,53 +102,53 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
   // individually re-drawn every frame, we blit them all to a single texture that is drawn a single time every frame.
   SDL_Renderer *renderer = GetSystem<Graphics>("graphics")->GetRenderer();
   SDL_Window *window = GetSystem<Graphics>("graphics")->GetWindow();
-  SDL_Texture *tile_texture = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, tiles[0].size() * tile_size, tiles.size() * tile_size);
+  SDL_Texture *tile_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tiles[0].size() * tile_size, tiles.size() * tile_size);
   SDL_SetRenderTarget(renderer, tile_texture);
 
   for (int row = 0; row < tiles.size(); row++)
   {
     for (int col = 0; col < tiles[row].size(); col++)
     {
-      // Create Tile Entity
-      // We still want this in case we wish to do anything with the tiles besides drawing them (such as colliders)
-      entt::entity tile = CreateEntity();
-
-      // Set State
-      Cascade::State state;
-      state.X = col * tile_size;
-      state.Y = -row * tile_size;
-      AddComponent(tile, state);
-      
-      // Generate animation name
-      std::string animation_name = sprite_sheet_name + "_" + std::to_string(tiles[row][col]);
-
-      // If animation for this tile does not already exist, create it
-      if (!GetSystem<Graphics>("graphics")->AnimationExists(animation_name))
+      if (tiles[row][col] != -1)
       {
-        CreateAnimation(animation_name, sprite_sheet_name, 0);
+        // Create Tile Entity
+        // We still want this in case we wish to do anything with the tiles besides drawing them (such as colliders)
+        entt::entity tile = CreateEntity();
 
-        // Determine X and Y coordinates of tile on sprite sheet
-        int sheet_width_in_tiles = sheet_width / tile_size;
-        int sheet_height_in_tiles = sheet_height / tile_size;
+        // Set State
+        Cascade::State state;
+        state.X = col * tile_size;
+        state.Y = -row * tile_size;
+        AddComponent(tile, state);
 
-        int tile_row = floor(tiles[row][col] / sheet_width_in_tiles);
-        int tile_col = tiles[row][col] - sheet_width_in_tiles * tile_row;
-        
-        AddFrame(animation_name, (tile_col) * tile_size, (tile_row) * tile_size, tile_size, tile_size);
+        // Generate animation name
+        std::string animation_name = sprite_sheet_name + "_" + std::to_string(tiles[row][col]);
+
+        // If animation for this tile does not already exist, create it
+        if (!GetSystem<Graphics>("graphics")->AnimationExists(animation_name))
+        {
+          CreateAnimation(animation_name, sprite_sheet_name, 0);
+
+          // Determine X and Y coordinates of tile on sprite sheet
+          int sheet_width_in_tiles = sheet_width / tile_size;
+          int sheet_height_in_tiles = sheet_height / tile_size;
+
+          int tile_row = floor(tiles[row][col] / sheet_width_in_tiles);
+          int tile_col = tiles[row][col] - sheet_width_in_tiles * tile_row;
+
+          AddFrame(animation_name, (tile_col)*tile_size, (tile_row)*tile_size, tile_size, tile_size);
+        }
+
+        SDL_Texture *source_sprite_sheet = GetSystem<Graphics>("graphics")->GetSpriteSheet(sprite_sheet_name);
+        SDL_FRect frame = GetSystem<Graphics>("graphics")->GetFrame(animation_name, 0);
+        SDL_FRect destination;
+        destination.x = col * tile_size;
+        destination.y = row * tile_size;
+        destination.w = tile_size;
+        destination.h = tile_size;
+
+        SDL_RenderTextureRotated(renderer, source_sprite_sheet, &frame, &destination, 0, NULL, SDL_FLIP_NONE);
       }
-
-      SDL_Texture *source_sprite_sheet = GetSystem<Graphics>("graphics")->GetSpriteSheet(sprite_sheet_name);
-      SDL_FRect frame = GetSystem<Graphics>("graphics")->GetFrame(animation_name, 0);
-      SDL_FRect destination;
-      destination.x = col * tile_size;
-      destination.y = row * tile_size;
-      destination.w = tile_size;
-      destination.h = tile_size;
-
-      SDL_RenderTextureRotated(renderer, source_sprite_sheet, &frame, &destination, 0, NULL, SDL_FLIP_NONE);
-
-      // SetCurrentAnimation(tile, animation_name, 0);
-      // SetLayer(tile, drawing_layer);
     }
   }
 

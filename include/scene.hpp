@@ -28,7 +28,7 @@ namespace Cascade
     virtual void Cleanup() = 0; // Cleanup function is called automatically when the scene is ended
 
     void TrackEntity(std::string entity_name, entt::entity entity); // entities are just id numbers so we don't mind copying them
-    entt::entity GetEntity(std::string entity_name) {return m_tracked_entites[entity_name];};
+    entt::entity GetEntity(std::string entity_name);
 
     bool m_end_scene{false};
     bool m_start_scene{false};

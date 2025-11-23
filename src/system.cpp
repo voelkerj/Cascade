@@ -13,6 +13,7 @@ void Cascade::Graphics::Load()
     std::cerr << SDL_GetError() << std::endl;
     exit(1);
   }
+  
 
   // Initialize Renderer
   m_renderer = SDL_CreateRenderer(m_window, NULL);
@@ -67,6 +68,13 @@ void Cascade::Graphics::LoadSpriteSheet(std::string sheet_name, std::string shee
 {
   SDL_Texture *sprite_sheet = IMG_LoadTexture(m_renderer, sheet_path.c_str());
 
+  // Skip if we've already loaded this sheet
+  if (m_sprite_sheets.find(sheet_name) != m_sprite_sheets.end())
+  {
+    return;
+  }
+
+  // Invalid sheet
   if (!sprite_sheet)
   {
     std::cerr << "Failed to load file " << sheet_path << "\n";
@@ -80,6 +88,7 @@ void Cascade::Graphics::LoadSpriteSheet(std::string sheet_name, std::string shee
 void Cascade::Graphics::StoreSpriteSheet(std::string sheet_name, SDL_Texture *sprite_sheet)
 {
   SDL_SetTextureScaleMode(sprite_sheet, SDL_SCALEMODE_NEAREST); // use nearest pixel scaling
+  SDL_SetTextureBlendMode(sprite_sheet, SDL_BLENDMODE_BLEND);
   m_sprite_sheets.emplace(sheet_name, sprite_sheet);
 }
 
@@ -320,7 +329,7 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
 
 void Cascade::Graphics::DrawColliders(entt::registry &registry)
 {
-  int color[4]{255, 0, 255, 0};
+  int color[4]{255, 0, 255, 255};
 
   auto view = registry.view<const NonRotatingCollider, State>();
 
