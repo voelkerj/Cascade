@@ -8,19 +8,15 @@
 #include "game.hpp"
 #include "components.hpp"
 
-Cascade::Game::Game()
+void Cascade::Game::Run()
 {
   // Initialize SDL
-  SDL_Init(SDL_INIT_VIDEO);
+  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   m_base_path = SDL_GetBasePath();
 
   AddSystem<Graphics>("graphics");
-}
+  AddSystem<Audio>("audio");
 
-Cascade::Game::~Game(){}
-
-void Cascade::Game::Run()
-{
   while (Continue())
   {
     StartFrame();
@@ -369,6 +365,21 @@ void Cascade::Game::SetClickAnimation(entt::entity button, std::string animation
 
   std::cerr << "Cannot set click animation, not a UI element!\n";
   exit(1);
+}
+
+void Cascade::Game::LoadSound(std::string sound_name, std::string sound_path, int sound_replay_interval)
+{
+  GetSystem<Audio>("audio")->LoadSound(sound_name, sound_path, sound_replay_interval);
+}
+
+void Cascade::Game::PlaySound(std::string sound_name)
+{
+  GetSystem<Audio>("audio")->PlaySound(sound_name);
+}
+
+void Cascade::Game::RemoveSound(std::string sound_name)
+{
+  GetSystem<Audio>("audio")->RemoveSound(sound_name);
 }
 
 void Cascade::Game::SetCameraZoom(float zoom)

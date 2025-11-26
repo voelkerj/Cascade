@@ -18,8 +18,8 @@ namespace Cascade
   class Game
   {
   public:
-    Game();
-    ~Game();
+    Game(){};
+    ~Game(){};
 
     void Run();
     void Quit();
@@ -127,6 +127,10 @@ namespace Cascade
 
     void SetHoverAnimation(entt::entity button, std::string animation_name);
     void SetClickAnimation(entt::entity button, std::string animation_name);
+
+    void LoadSound(std::string sound_name, std::string sound_path, int sound_replay_interval);
+    void PlaySound(std::string sound_name);
+    void RemoveSound(std::string sound_name);
 
     float GetCameraZoom() { return GetSystem<Graphics>("graphics")->GetCameraZoom(); };
     void SetCameraZoom(float zoom);

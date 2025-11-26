@@ -4,6 +4,7 @@
 #include "../include/game.hpp"
 #include "../include/components.hpp"
 
+// Graphics System
 void Cascade::Graphics::Load()
 {
   // Initialize Window
@@ -255,10 +256,18 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     // Get clipping rectangle based on frame index
     clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
 
-    float point[2]{state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
+    if (drawing_state.flip)
+    {
+      float point[2]{state.X + -m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
                    state.Y + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
-
-    coords = ConvertWCStoScreenCoords(point);
+                   
+      coords = ConvertWCStoScreenCoords(point);      
+    } else {
+      float point[2]{state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
+                   state.Y + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
+                   
+      coords = ConvertWCStoScreenCoords(point); 
+    }    
 
     drawing_state.destination_rect.x = coords[0];
     drawing_state.destination_rect.y = coords[1];
@@ -407,4 +416,53 @@ void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)
       SetCurrentAnimation(registry, entity, ui_element.hover_animation, 1);
     }
   }
+}
+
+// Audio System
+void Cascade::Audio::LoadSound(std::string sound_name, std::string sound_path, int sound_replay_interval)
+{
+  Sound sound;
+  sound.replay_interval = sound_replay_interval;
+
+  if (!SDL_LoadWAV(sound_path.c_str(), &sound.spec, &sound.buffer, &sound.length)) 
+  {
+    std::cerr << "Unable to load sound: " << sound_path << "\n";
+    exit(1);
+  }
+
+  //sound.stream = SDL_CreateAudioStream(&sound.spec, &sound.spec);
+  sound.stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &sound.spec, NULL, NULL);
+
+  if (sound.stream == NULL)
+  {
+    std::cerr << "Unable to open audio stream: " << SDL_GetError() << "\n";
+    exit(1);
+  }
+
+  SDL_ResumeAudioStreamDevice(sound.stream);
+
+  m_sounds[sound_name] = sound;
+}
+
+void Cascade::Audio::PlaySound(std::string sound_name)
+{
+  // SDL_GetAudioStreamQueued(m_sounds[sound_name].stream) <= (int)m_sounds[sound_name].length
+  if (SDL_GetTicks() - m_sounds[sound_name].last_replay >= m_sounds[sound_name].replay_interval)
+  {    
+    bool sound_played = SDL_PutAudioStreamData(m_sounds[sound_name].stream, m_sounds[sound_name].buffer, m_sounds[sound_name].length);
+
+    m_sounds[sound_name].last_replay = SDL_GetTicks();
+
+    if (!sound_played)
+    {
+      std::cerr << "Unable to play sound: " << SDL_GetError() << "\n";
+      exit(1);
+    }
+  }
+}
+
+void Cascade::Audio::RemoveSound(std::string sound_name)
+{
+  SDL_free(m_sounds[sound_name].buffer);
+  SDL_DestroyAudioStream(m_sounds[sound_name].stream);
 }

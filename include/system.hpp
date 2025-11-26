@@ -50,6 +50,16 @@ namespace Cascade
     int offset[2]{0, 0};
   };
 
+  struct Sound
+  {
+    SDL_AudioSpec spec;
+    Uint8 *buffer;
+    Uint32 length;
+    SDL_AudioStream *stream;
+    int replay_interval;
+    Uint32 last_replay{0};
+  };
+
   // Graphics System
   // Operates on components: CurrentAnimation and State
   class Graphics : public System
@@ -105,6 +115,24 @@ namespace Cascade
     std::map<std::string, SDL_Texture *> m_sprite_sheets;
     std::unordered_map<std::string, Animation> m_animations;
     bool m_draw_colliders{false};
+  };
+
+  class Audio : public System
+  {
+  public:
+    using System::System;
+
+    void Load() override {};
+    void Update() override {};
+    void Cleanup() override {};
+
+    void LoadSound(std::string sound_name, std::string sound_path, int sound_replay_interval);
+    void PlaySound(std::string sound_name);
+    void RemoveSound(std::string sound_name);
+
+  private:
+    SDL_AudioDeviceID m_audio_device;
+    std::map<std::string, Sound> m_sounds;
   };
 }
 
