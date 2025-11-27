@@ -42,6 +42,15 @@ void Cascade::Graphics::Cleanup()
 void Cascade::Graphics::Update()
 {
   entt::registry &registry = m_game.GetRegistry();
+
+  // Update all drawing states
+  // this MUST happen before calling CalculateDestinations()
+  auto view = registry.view<DrawingState>();
+  for (auto [entity, drawing_state] : view.each())
+  {
+    UpdateDrawingState(drawing_state);
+  }
+
   UpdateUIAnimations(registry);
   CalculateDestinations(registry);
   DrawEntities(registry);
@@ -322,8 +331,6 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
 
   for (auto [entity, drawing_state] : view.each())
   {
-    UpdateDrawingState(drawing_state);
-
     clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx]; 
 
     if (drawing_state.enable_tint)
