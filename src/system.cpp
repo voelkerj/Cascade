@@ -426,50 +426,111 @@ void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)
 }
 
 // Audio System
-void Cascade::Audio::LoadSound(std::string sound_name, std::string sound_path, int sound_replay_interval)
+void Cascade::Audio::Load()
 {
-  Sound sound;
-  sound.replay_interval = sound_replay_interval;
+  m_audio_device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
 
-  if (!SDL_LoadWAV(sound_path.c_str(), &sound.spec, &sound.buffer, &sound.length)) 
+  if (m_audio_device == 0)
   {
-    std::cerr << "Unable to load sound: " << sound_path << "\n";
+    std::cerr << "Unable to open audio device: " << SDL_GetError();
     exit(1);
   }
-
-  //sound.stream = SDL_CreateAudioStream(&sound.spec, &sound.spec);
-  sound.stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &sound.spec, NULL, NULL);
-
-  if (sound.stream == NULL)
-  {
-    std::cerr << "Unable to open audio stream: " << SDL_GetError() << "\n";
-    exit(1);
-  }
-
-  SDL_ResumeAudioStreamDevice(sound.stream);
-
-  m_sounds[sound_name] = sound;
 }
 
-void Cascade::Audio::PlaySound(std::string sound_name)
+void Cascade::Audio::Update()
 {
-  // SDL_GetAudioStreamQueued(m_sounds[sound_name].stream) <= (int)m_sounds[sound_name].length
-  if (SDL_GetTicks() - m_sounds[sound_name].last_replay >= m_sounds[sound_name].replay_interval)
-  {    
-    bool sound_played = SDL_PutAudioStreamData(m_sounds[sound_name].stream, m_sounds[sound_name].buffer, m_sounds[sound_name].length);
-
-    m_sounds[sound_name].last_replay = SDL_GetTicks();
-
-    if (!sound_played)
+  for (auto& pair : m_sounds)
+  {
+    if (pair.second->play == true)
     {
-      std::cerr << "Unable to play sound: " << SDL_GetError() << "\n";
-      exit(1);
+      // There are 2 types of sounds: single and looping
+      if (!pair.second->loop_sound)
+      {
+        // Single Sound
+        // Play the sound once, reset the play value
+        SDL_PutAudioStreamData(pair.second->stream, pair.second->wav_data, (int)pair.second->wav_data_length);
+        pair.second->play = false;
+      } else {
+        // Looping Sound
+        // If audio stream contains less than the length of this sound, add a copy of it to the stream
+        // Do not reset the play value
+        if (SDL_GetAudioStreamQueued(pair.second->stream) < (int)pair.second->wav_data_length)
+        {
+          SDL_PutAudioStreamData(pair.second->stream, pair.second->wav_data, (int)pair.second->wav_data_length);
+        }
+      }
     }
   }
 }
 
-void Cascade::Audio::RemoveSound(std::string sound_name)
+void Cascade::Audio::Cleanup()
 {
-  SDL_free(m_sounds[sound_name].buffer);
-  SDL_DestroyAudioStream(m_sounds[sound_name].stream);
+  SDL_CloseAudioDevice(m_audio_device);
+  for (auto& pair : m_sounds)
+  {
+    if (pair.second->stream)
+    {
+      SDL_DestroyAudioStream(pair.second->stream);
+    }
+
+    SDL_free(pair.second->wav_data);
+  }
+}
+
+void Cascade::Audio::LoadSound(std::string sound_name, std::string sound_path)
+{
+  std::unique_ptr<Cascade::Sound> sound = std::make_unique<Sound>();
+
+  SDL_AudioSpec spec;
+
+  if(!SDL_LoadWAV(sound_path.c_str(), &spec, &sound->wav_data, &sound->wav_data_length))
+  {
+    std::cerr << "Unable to load .wav file: " << SDL_GetError();
+    exit(1);
+  }
+
+  sound->stream = SDL_CreateAudioStream(&spec, NULL);
+  SDL_BindAudioStream(m_audio_device, sound->stream);
+
+  m_sounds[sound_name] = std::move(sound);
+}
+
+void Cascade::Audio::PlaySound(std::string sound_name, bool loop_sound)
+{
+  m_sounds[sound_name]->play = true;
+  m_sounds[sound_name]->loop_sound = loop_sound;
+}
+
+void Cascade::Audio::SetFrequencyRatio(std::string sound_name, float ratio)
+{
+  if (ratio < 0.01 || ratio > 100)
+  {
+    std::cerr << sound_name << ": Sound frequency ratio must be between 0.1 and 100\n";
+    exit(1);
+  }
+
+  SDL_SetAudioStreamFrequencyRatio(m_sounds[sound_name]->stream, ratio);
+}
+
+bool Cascade::Audio::IsSoundPlaying(std::string sound_name) 
+{
+  if (SDL_GetAudioStreamAvailable(m_sounds[sound_name]->stream) > 0)
+  {
+    return true;
+  }
+  return false;
+}
+
+void Cascade::Audio::StopSound(std::string sound_name)
+{
+  SDL_ClearAudioStream(m_sounds[sound_name]->stream);
+  m_sounds[sound_name]->play = false;
+}
+
+void Cascade::Audio::StopAllSounds()
+{
+  for (auto& pair : m_sounds)
+  {
+    StopSound(pair.first);
+  }
 }

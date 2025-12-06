@@ -52,12 +52,11 @@ namespace Cascade
 
   struct Sound
   {
-    SDL_AudioSpec spec;
-    Uint8 *buffer;
-    Uint32 length;
+    Uint8 *wav_data;
+    Uint32 wav_data_length;
     SDL_AudioStream *stream;
-    int replay_interval;
-    Uint32 last_replay{0};
+    bool loop_sound;
+    bool play{false}; // if true, schedule this sound to be played
   };
 
   // Graphics System
@@ -122,17 +121,20 @@ namespace Cascade
   public:
     using System::System;
 
-    void Load() override {};
-    void Update() override {};
-    void Cleanup() override {};
+    void Load() override;
+    void Update() override;
+    void Cleanup() override;
 
-    void LoadSound(std::string sound_name, std::string sound_path, int sound_replay_interval);
-    void PlaySound(std::string sound_name);
-    void RemoveSound(std::string sound_name);
+    void LoadSound(std::string sound_name, std::string sound_path);
+    void PlaySound(std::string sound_name, bool loop_sound);
+    void SetFrequencyRatio(std::string sound_name, float ratio);
+    bool IsSoundPlaying(std::string sound_name);
+    void StopSound(std::string sound_name);
+    void StopAllSounds();
 
   private:
     SDL_AudioDeviceID m_audio_device;
-    std::map<std::string, Sound> m_sounds;
+    std::map<std::string, std::unique_ptr<Sound>> m_sounds;
   };
 }
 

@@ -367,19 +367,34 @@ void Cascade::Game::SetClickAnimation(entt::entity button, std::string animation
   exit(1);
 }
 
-void Cascade::Game::LoadSound(std::string sound_name, std::string sound_path, int sound_replay_interval)
+void Cascade::Game::LoadSound(std::string sound_name, std::string sound_path)
 {
-  GetSystem<Audio>("audio")->LoadSound(sound_name, sound_path, sound_replay_interval);
+  GetSystem<Audio>("audio")->LoadSound(sound_name, sound_path);
 }
 
-void Cascade::Game::PlaySound(std::string sound_name)
+void Cascade::Game::PlaySound(std::string sound_name, bool loop_sound)
 {
-  GetSystem<Audio>("audio")->PlaySound(sound_name);
+  GetSystem<Audio>("audio")->PlaySound(sound_name, loop_sound);
 }
 
-void Cascade::Game::RemoveSound(std::string sound_name)
+void Cascade::Game::SetFrequencyRatio(std::string sound_name, float ratio)
 {
-  GetSystem<Audio>("audio")->RemoveSound(sound_name);
+  GetSystem<Audio>("audio")->SetFrequencyRatio(sound_name, ratio);
+}
+
+bool Cascade::Game::IsSoundPlaying(std::string sound_name)
+{
+  return GetSystem<Audio>("audio")->IsSoundPlaying(sound_name);
+}
+
+void Cascade::Game::StopSound(std::string sound_name)
+{
+  GetSystem<Audio>("audio")->StopSound(sound_name);
+}
+
+void Cascade::Game::StopAllSounds()
+{
+  GetSystem<Audio>("audio")->StopAllSounds();
 }
 
 void Cascade::Game::SetCameraZoom(float zoom)

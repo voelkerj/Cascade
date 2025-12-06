@@ -128,9 +128,12 @@ namespace Cascade
     void SetHoverAnimation(entt::entity button, std::string animation_name);
     void SetClickAnimation(entt::entity button, std::string animation_name);
 
-    void LoadSound(std::string sound_name, std::string sound_path, int sound_replay_interval);
-    void PlaySound(std::string sound_name);
-    void RemoveSound(std::string sound_name);
+    void LoadSound(std::string sound_name, std::string sound_path);
+    void PlaySound(std::string sound_name, bool loop_sound);
+    void SetFrequencyRatio(std::string sound_name, float ratio);
+    bool IsSoundPlaying(std::string sound_name);
+    void StopSound(std::string sound_name);
+    void StopAllSounds();
 
     float GetCameraZoom() { return GetSystem<Graphics>("graphics")->GetCameraZoom(); };
     void SetCameraZoom(float zoom);

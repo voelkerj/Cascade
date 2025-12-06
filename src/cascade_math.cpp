@@ -1,8 +1,15 @@
+#include <iostream>
+
 #include "../include/cascade_math.hpp"
 #include "../include/components.hpp"
 
 float Cascade::RandInRange(float min, float max)
 {
+  if (min > max)
+  {
+    std::cerr << "Min: " << min << " cannot be greater than Max: " << max << "\n";
+    exit(1);
+  }
   std::mt19937 generator(std::chrono::system_clock::now().time_since_epoch().count());
   std::uniform_real_distribution<> distribution(min, max);
 
