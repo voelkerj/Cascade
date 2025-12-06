@@ -12,6 +12,7 @@
 #include "scene.hpp"
 
 #include "../external/SDL/include/SDL3/SDL.h"
+#include "../external/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
 
 namespace Cascade
 {

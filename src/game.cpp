@@ -14,6 +14,9 @@ void Cascade::Game::Run()
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
   m_base_path = SDL_GetBasePath();
 
+  // Initialize SLD_ttf
+  TTF_Init();
+
   AddSystem<Graphics>("graphics");
   AddSystem<Audio>("audio");
 
