@@ -5,6 +5,7 @@
 
 #include "../external/entt/entt.hpp"
 #include "../external/SDL/include/SDL3/SDL.h"
+#include "../external/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
 #include "../external/SDL_image/include/SDL3_image/SDL_image.h"
 
 #include "components.hpp"
@@ -102,6 +103,9 @@ namespace Cascade
 
     void UpdateUIAnimations(entt::registry &registry);
 
+    void LoadFont(std::string font_name, std::string font_path, float font_size);
+    void WriteText(std::string text, std::string font_name, float position[2], Cascade::Color color, int layer);
+
     SDL_Renderer *GetRenderer() { return m_renderer; };
     SDL_Window *GetWindow() { return m_window; };
 
@@ -114,6 +118,7 @@ namespace Cascade
     std::map<std::string, SDL_Texture *> m_sprite_sheets;
     std::unordered_map<std::string, Animation> m_animations;
     bool m_draw_colliders{false};
+    std::map<std::string, std::shared_ptr<TTF_Font>> m_fonts;
   };
 
   class Audio : public System

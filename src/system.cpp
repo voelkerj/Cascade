@@ -155,6 +155,7 @@ void Cascade::Graphics::SetLayer(entt::registry &registry, entt::entity entity, 
 void Cascade::Game::SortDrawingLayers()
 {
   // Sort registry by layer
+  // Higher layers are drawn first. Lower layers will be drawn on top of higher ones.
   m_entt_registry.sort<DrawingState>([](const DrawingState &a, const DrawingState &b)
   {
   return a.layer > b.layer;
@@ -423,6 +424,47 @@ void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)
       SetCurrentAnimation(registry, entity, ui_element.hover_animation, 1);
     }
   }
+}
+
+void Cascade::Graphics::LoadFont(std::string font_name, std::string font_path, float font_size)
+{
+  std::shared_ptr<TTF_Font> font(TTF_OpenFont(font_path.c_str(), font_size), TTF_CloseFont);
+
+  if (!font)
+  {
+    std::cerr << "Unable to open font: " << font_path << "\n";
+    exit(1);
+  }
+
+  m_fonts[font_name] = font;
+}
+
+void Cascade::Graphics::WriteText(std::string text, std::string font_name, float position[2], Cascade::Color color, int layer)
+{
+  SDL_Surface* text_surface = TTF_RenderText_Blended_Wrapped(m_fonts[font_name].get(), text.c_str(), 0, color.GetColor(), 0);
+
+  SDL_Texture* text_texture = SDL_CreateTextureFromSurface(m_renderer, text_surface);
+
+  StoreSpriteSheet(text, text_texture);
+
+  m_game.CreateAnimation(text, text, 1);
+  m_game.AddFrame(text, 0, 0, text_surface->w, text_surface->h);
+
+  Cascade::UIElement text_ui;
+  text_ui.position[0] = position[0];
+  text_ui.position[1] = position[1];
+  text_ui.size[0] = text_surface->w;
+  text_ui.size[1] = text_surface->h;
+
+  SDL_DestroySurface(text_surface);
+
+  entt::entity text_entity = m_game.CreateEntity();
+  m_game.SetCurrentAnimation(text_entity, text, 0);
+
+  m_game.AddComponent(text_entity, text_ui);
+
+  m_game.SetLayer(text_entity, layer);
+
 }
 
 // Audio System

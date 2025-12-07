@@ -1,6 +1,8 @@
 #ifndef CASCADE_COMPONENTS_H
 #define CASCADE_COMPONENTS_H
 
+#include <iostream>
+
 #include "cascade_math.hpp"
 
 #include "../external/SDL/include/SDL3/SDL.h"
@@ -49,6 +51,64 @@ namespace Cascade
     float Y{0};
     float width{1};
     float height{1};
+  };
+
+  // This isn't actually a component, it's just a wrapper around
+  // SDL_Color, but idk where else to put it so I guess it goes here???
+  class Color
+  {
+  public:
+    Color(Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha)
+    {
+      SetRed(red);
+      SetGreen(green);
+      SetBlue(blue);
+      SetAlpha(alpha);
+    };
+
+    void SetRed(Uint8 red)
+    {
+      if (red < 0 || red > 255)
+      {
+        std::cerr << "Red color invalid range.\n";
+        exit(1);
+      }
+      m_color.r = red;
+    }
+
+    void SetGreen(Uint8 green)
+    {
+      if (green < 0 || green > 255)
+      {
+        std::cerr << "Green color invalid range.\n";
+        exit(1);
+      }
+      m_color.g = green;
+    }
+
+    void SetBlue(Uint8 blue)
+    {
+      if (blue < 0 || blue > 255)
+      {
+        std::cerr << "Blue color invalid range.\n";
+        exit(1);
+      }
+      m_color.b = blue;
+    }
+
+    void SetAlpha(Uint8 alpha)
+    {
+      if (alpha < 0 || alpha > 255)
+      {
+        std::cerr << "Alpha invalid range.\n";
+        exit(1);
+      }
+      m_color.a = alpha;
+    }
+
+    SDL_Color GetColor(){ return m_color; };
+  private:
+    SDL_Color m_color = {0xFF, 0xFF, 0xFF, 0x0}; // white
   };
 }
 

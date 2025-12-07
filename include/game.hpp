@@ -136,6 +136,9 @@ namespace Cascade
     void StopSound(std::string sound_name);
     void StopAllSounds();
 
+    void LoadFont(std::string font_name, std::string font_path, float font_size);
+    void WriteText(std::string text, std::string font_name, float position[2], Cascade::Color color, int layer);
+
     float GetCameraZoom() { return GetSystem<Graphics>("graphics")->GetCameraZoom(); };
     void SetCameraZoom(float zoom);
     void SetCameraPosition(float position[2]);

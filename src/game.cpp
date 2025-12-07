@@ -400,6 +400,16 @@ void Cascade::Game::StopAllSounds()
   GetSystem<Audio>("audio")->StopAllSounds();
 }
 
+void Cascade::Game::LoadFont(std::string font_name, std::string font_path, float font_size)
+{
+  GetSystem<Graphics>("graphics")->LoadFont(font_name, font_path,font_size);
+}
+
+void Cascade::Game::WriteText(std::string text, std::string font_name, float position[2], Cascade::Color color, int layer)
+{
+  GetSystem<Graphics>("graphics")->WriteText(text, font_name, position, color, layer);
+}
+
 void Cascade::Game::SetCameraZoom(float zoom)
 {
   GetSystem<Graphics>("graphics")->SetCameraZoom(zoom);
