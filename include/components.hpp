@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "cascade_math.hpp"
+#include "cascade_utils.hpp"
 
 #include "../external/SDL/include/SDL3/SDL.h"
 
@@ -14,6 +14,11 @@ namespace Cascade
   struct State
   {
     float X{0}, Y{0}, VX{0}, VY{0}, AX{0}, AY{0}, ScaleX{1}, ScaleY{1}, Angle{0};
+  };
+
+  struct TileData
+  {
+    std::string source_file;
   };
 
   // Animation and rendering state

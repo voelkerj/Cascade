@@ -120,6 +120,10 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
         state.Y = -row * tile_size;
         AddComponent(tile, state);
 
+        // Set Source File for potential later reference
+        Cascade::TileData data;
+        data.source_file = tile_file;
+
         // Generate animation name
         std::string animation_name = sprite_sheet_name + "_" + std::to_string(tiles[row][col]);
 
@@ -184,6 +188,136 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
   SDL_SetRenderTarget(renderer, NULL);
 }
 
+void Cascade::Game::LoadAnimatedTileLayer(std::vector<std::string> tile_frame_paths, int tile_size, std::string sprite_sheet_name, int drawing_layer)
+{
+  // Set up temporary render target (texture) to draw the tiles to
+  // This is done for efficiency purposes. Instead of having each drawable tile as a seperate entity that must be
+  // individually re-drawn every frame, we blit them all to a single texture that is drawn a single time every frame.
+  SDL_Renderer *renderer = GetSystem<Graphics>("graphics")->GetRenderer();
+  SDL_Window *window = GetSystem<Graphics>("graphics")->GetWindow();
+
+  // Get the width and height of the sprite sheet in both pixels and tiles
+  float source_sheet_width, source_sheet_height;
+  GetSystem<Graphics>("graphics")->GetSpriteSheetSize(sprite_sheet_name, source_sheet_width, source_sheet_height);
+  int sheet_width_in_tiles = source_sheet_width / tile_size;
+  int sheet_height_in_tiles = source_sheet_height / tile_size;
+
+  // Setup tile layer entity
+  entt::entity tile_layer = CreateEntity();
+
+  // Extract filename from first tile frame file and use it as the name for the animation
+  std::string tile_layer_filename = Cascade::ExtractFilenameFromPath(tile_frame_paths[0]);
+
+  // Set up animation
+  std::string animation_name = tile_layer_filename;
+  std::string animated_tiles_sheet_name = tile_layer_filename;
+
+  CreateAnimation(animation_name, animated_tiles_sheet_name, 300);
+  SetCurrentAnimation(tile_layer, animation_name, 0);
+  SetLayer(tile_layer, drawing_layer);
+
+  // Get source sprite sheet for drawing tiles
+  SDL_Texture *source_sprite_sheet = GetSystem<Graphics>("graphics")->GetSpriteSheet(sprite_sheet_name);
+
+  // Create the destination sprite sheet for the tile layer frames
+  std::vector<std::vector<int>> tiles = ReadTileFile(tile_frame_paths[0]);
+  SDL_Texture *destination_sprite_sheet = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tiles[0].size() * tile_size * tile_frame_paths.size(), tiles.size() * tile_size);
+
+  for (int file_idx = 0; file_idx < tile_frame_paths.size(); file_idx++) // for each tile animation frame
+  {
+    std::vector<std::vector<int>> tiles = ReadTileFile(tile_frame_paths[file_idx]);
+
+    SDL_Texture *tile_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tiles[0].size() * tile_size, tiles.size() * tile_size);
+    SDL_SetRenderTarget(renderer, tile_texture);
+
+    for (int row = 0; row < tiles.size(); row++)
+    {
+      for (int col = 0; col < tiles[row].size(); col++)
+      {
+        if (tiles[row][col] != -1)
+        {
+          // If we're on tile file 0, create an entity for this tile
+          // This is done so we can set some data to be used later to interact with the tile if necessary
+          // An example of this is colliders
+          if (file_idx == 0)
+          {
+            entt::entity tile = CreateEntity();
+
+            Cascade::State state;
+            state.X = col * tile_size;
+            state.Y = -row * tile_size;
+
+            // Set tile filename data for later lookup
+            Cascade::TileData data;
+            data.source_file = tile_frame_paths[file_idx];
+          }
+
+          // Determine X and Y coordinates of tile on sprite sheet
+          int tile_row = floor(tiles[row][col] / sheet_width_in_tiles);
+          int tile_col = tiles[row][col] - sheet_width_in_tiles * tile_row;
+
+          SDL_FRect frame;
+          frame.x = (tile_col) * tile_size;
+          frame.y = (tile_row) * tile_size;
+          frame.h = tile_size;
+          frame.w = tile_size;
+
+          SDL_FRect destination;
+          destination.x = col * tile_size;
+          destination.y = row * tile_size;
+          destination.w = tile_size;
+          destination.h = tile_size;
+
+          SDL_RenderTextureRotated(renderer, source_sprite_sheet, &frame, &destination, 0, NULL, SDL_FLIP_NONE);
+        }
+      }
+    }
+
+    // Add the tile layer to the animation sprite sheet
+    SDL_FRect destination;
+    destination.x = tiles[0].size() * tile_size * file_idx;
+    destination.y = 0;
+    destination.w = tiles[0].size() * tile_size;
+    destination.h = tiles.size() * tile_size;
+
+    SDL_SetRenderTarget(renderer, destination_sprite_sheet);
+    SDL_RenderTextureRotated(renderer, tile_texture, NULL, &destination, 0, NULL, SDL_FLIP_NONE);
+
+    // Add frame to animation
+    AddFrame(animation_name, destination.x, destination.y, destination.w, destination.h);
+  }
+
+  GetSystem<Graphics>("graphics")->StoreSpriteSheet(animated_tiles_sheet_name, destination_sprite_sheet);
+
+  float frame_sheet_width = tiles[0].size() * tile_size;
+  float frame_sheet_height = tiles.size() * tile_size;
+  
+  State tile_layer_state;
+  tile_layer_state.X = frame_sheet_width / 2 - tile_size / 2;
+  tile_layer_state.Y = -frame_sheet_height / 2 + tile_size / 2;
+  AddComponent(tile_layer, tile_layer_state);
+
+  // Return rendering back to the window
+  SDL_SetRenderTarget(renderer, NULL);
+}
+
+entt::entity Cascade::Game::FindTileFromFileAndState(std::string tile_file, Cascade::State state_in)
+{
+  // Find entity for this tile based on tile file and state
+  auto view = GetRegistry().view<const State, const TileData>();
+
+  for (auto [entity, state, tile_data] : view.each())
+  {
+    if (tile_data.source_file == tile_file && state.X == state_in.X && state.Y == state_in.Y)
+    {
+      return entity;
+    }
+  }
+
+  std::cerr << "Cannot find tile from " << tile_file << "\n";
+  exit(1);
+}
+
 void Cascade::Game::SetColliderTiles(std::string tile_file, int tile_size, std::vector<int> collider_tiles)
 {
   std::vector<std::vector<int>> tiles = ReadTileFile(tile_file);
@@ -246,24 +380,19 @@ void Cascade::Game::SetColliderTiles(std::string tile_file, int tile_size, std::
 
         if (is_collider)
         {
-          // Find entity for this tile
-          // Find and store reference to player
-          auto view = GetRegistry().view<const State>();
+          Cascade::State collider_state;
+          collider_state.X = col * tile_size;
+          collider_state.Y = -row * tile_size;
 
-          for (auto [entity, state] : view.each())
-          {
-            if (state.X == col * tile_size && state.Y == -row * tile_size)
-            {
-              NonRotatingCollider collider;
-              collider.static_collider = true;
-              collider.X = state.X;
-              collider.Y = state.Y;
-              collider.width = tile_size;
-              collider.height = tile_size;
-              AddComponent<NonRotatingCollider>(entity, collider);
-              break;
-            }
-          }
+          entt::entity entity = FindTileFromFileAndState(tile_file, collider_state);
+
+          NonRotatingCollider collider;
+          collider.static_collider = true;
+          collider.X = collider_state.X;
+          collider.Y = collider_state.Y;
+          collider.width = tile_size;
+          collider.height = tile_size;
+          AddComponent<NonRotatingCollider>(entity, collider);
         }
       }
     }

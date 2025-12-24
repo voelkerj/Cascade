@@ -1,8 +1,9 @@
 #include <iostream>
 
-#include "../include/cascade_math.hpp"
+#include "../include/cascade_utils.hpp"
 #include "../include/components.hpp"
 
+// --- MATH ---
 float Cascade::RandInRange(float min, float max)
 {
   if (min > max)
@@ -43,4 +44,21 @@ std::vector<float> Cascade::Unit(const float v[2])
 float Cascade::VectorAngle(const float v1[2], const float v2[2])
 {
   return (180 / M_PI) * acos(Dot(v1, v2) / (Norm(v1) * Norm(v2)));
+}
+
+// ---FILE SYSTEM ---
+std::string Cascade::ExtractFilenameFromPath(std::string path)
+{
+    // Find the last path separator
+  size_t last_slash = path.find_last_of("/\\");
+  std::string filename = (last_slash == std::string::npos) ? path : path.substr(last_slash + 1);
+
+    // Remove the file extension
+  size_t last_dot = filename.rfind('.');
+  if (last_dot != std::string::npos)
+  {
+    filename = filename.substr(0, last_dot);
+  }
+
+  return filename;
 }
