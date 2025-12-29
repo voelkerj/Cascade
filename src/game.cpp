@@ -91,104 +91,13 @@ std::vector<std::vector<int>> Cascade::Game::ReadTileFile(std::string tile_file)
 
 void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer)
 {
-  std::vector<std::vector<int>> tiles = ReadTileFile(tile_file);
+  std::vector<std::string> tile_layer_vect;
+  tile_layer_vect.push_back(tile_file);
 
-  float sheet_width, sheet_height;
-  GetSystem<Graphics>("graphics")->GetSpriteSheetSize(sprite_sheet_name, sheet_width, sheet_height);
-
-  // Set up temporary render target (texture) to draw the tiles to
-  // This is done for efficiency purposes. Instead of having each drawable tile as a seperate entity that must be 
-  // individually re-drawn every frame, we blit them all to a single texture that is drawn a single time every frame.
-  SDL_Renderer *renderer = GetSystem<Graphics>("graphics")->GetRenderer();
-  SDL_Window *window = GetSystem<Graphics>("graphics")->GetWindow();
-  SDL_Texture *tile_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tiles[0].size() * tile_size, tiles.size() * tile_size);
-  SDL_SetRenderTarget(renderer, tile_texture);
-
-  for (int row = 0; row < tiles.size(); row++)
-  {
-    for (int col = 0; col < tiles[row].size(); col++)
-    {
-      if (tiles[row][col] != -1)
-      {
-        // Create Tile Entity
-        // We still want this in case we wish to do anything with the tiles besides drawing them (such as colliders)
-        entt::entity tile = CreateEntity();
-
-        // Set State
-        Cascade::State state;
-        state.X = col * tile_size;
-        state.Y = -row * tile_size;
-        AddComponent(tile, state);
-
-        // Set Source File for potential later reference
-        Cascade::TileData data;
-        data.source_file = tile_file;
-
-        // Generate animation name
-        std::string animation_name = sprite_sheet_name + "_" + std::to_string(tiles[row][col]);
-
-        // If animation for this tile does not already exist, create it
-        if (!GetSystem<Graphics>("graphics")->AnimationExists(animation_name))
-        {
-          CreateAnimation(animation_name, sprite_sheet_name, 0);
-
-          // Determine X and Y coordinates of tile on sprite sheet
-          int sheet_width_in_tiles = sheet_width / tile_size;
-          int sheet_height_in_tiles = sheet_height / tile_size;
-
-          int tile_row = floor(tiles[row][col] / sheet_width_in_tiles);
-          int tile_col = tiles[row][col] - sheet_width_in_tiles * tile_row;
-
-          AddFrame(animation_name, (tile_col)*tile_size, (tile_row)*tile_size, tile_size, tile_size);
-        }
-
-        SDL_Texture *source_sprite_sheet = GetSystem<Graphics>("graphics")->GetSpriteSheet(sprite_sheet_name);
-        SDL_FRect frame = GetSystem<Graphics>("graphics")->GetFrame(animation_name, 0);
-        SDL_FRect destination;
-        destination.x = col * tile_size;
-        destination.y = row * tile_size;
-        destination.w = tile_size;
-        destination.h = tile_size;
-
-        SDL_RenderTextureRotated(renderer, source_sprite_sheet, &frame, &destination, 0, NULL, SDL_FLIP_NONE);
-      }
-    }
-  }
-
-  // Setup tile layer entity
-  entt::entity tile_layer = CreateEntity();
-
-  // Extract filename from tile_file path
-  // Find the last path separator
-  size_t last_slash = tile_file.find_last_of("/\\");
-  std::string tile_layer_filename = (last_slash == std::string::npos) ? tile_file : tile_file.substr(last_slash + 1);
-
-  // Remove the file extension
-  size_t last_dot = tile_layer_filename.rfind('.');
-  if (last_dot != std::string::npos) {
-    tile_layer_filename = tile_layer_filename.substr(0, last_dot);
-  }
-
-  // Store the tile texture as a new sprite sheet
-  GetSystem<Graphics>("graphics")->StoreSpriteSheet(tile_layer_filename, tile_texture);
-
-  // Use it as an animation for the tile_layer entity
-  CreateAnimation(tile_layer_filename, tile_layer_filename, 0);
-  GetSystem<Graphics>("graphics")->GetSpriteSheetSize(tile_layer_filename, sheet_width, sheet_height);
-  AddFrame(tile_layer_filename, 0, 0, sheet_width, sheet_height);
-  SetCurrentAnimation(tile_layer, tile_layer_filename, 0);
-  SetLayer(tile_layer, drawing_layer);
-
-  State tile_layer_state;
-  tile_layer_state.X = sheet_width / 2 - tile_size / 2;
-  tile_layer_state.Y = -sheet_height / 2 + tile_size / 2;
-  AddComponent(tile_layer, tile_layer_state);
-
-  // Return rendering back to the window
-  SDL_SetRenderTarget(renderer, NULL);
+  LoadTileLayer(tile_layer_vect, tile_size, sprite_sheet_name, drawing_layer, 0);
 }
 
-void Cascade::Game::LoadAnimatedTileLayer(std::vector<std::string> tile_frame_paths, int tile_size, std::string sprite_sheet_name, int drawing_layer)
+void Cascade::Game::LoadTileLayer(std::vector<std::string> tile_frame_paths, int tile_size, std::string sprite_sheet_name, int drawing_layer, int update_interval)
 {
   // Set up temporary render target (texture) to draw the tiles to
   // This is done for efficiency purposes. Instead of having each drawable tile as a seperate entity that must be
@@ -212,7 +121,7 @@ void Cascade::Game::LoadAnimatedTileLayer(std::vector<std::string> tile_frame_pa
   std::string animation_name = tile_layer_filename;
   std::string animated_tiles_sheet_name = tile_layer_filename;
 
-  CreateAnimation(animation_name, animated_tiles_sheet_name, 300);
+  CreateAnimation(animation_name, animated_tiles_sheet_name, update_interval);
   SetCurrentAnimation(tile_layer, animation_name, 0);
   SetLayer(tile_layer, drawing_layer);
 
@@ -246,10 +155,12 @@ void Cascade::Game::LoadAnimatedTileLayer(std::vector<std::string> tile_frame_pa
             Cascade::State state;
             state.X = col * tile_size;
             state.Y = -row * tile_size;
+            AddComponent(tile, state);
 
             // Set tile filename data for later lookup
             Cascade::TileData data;
             data.source_file = tile_frame_paths[file_idx];
+            AddComponent(tile, data);
           }
 
           // Determine X and Y coordinates of tile on sprite sheet
