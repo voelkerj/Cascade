@@ -159,6 +159,7 @@ namespace Cascade
     bool WasPressed(entt::entity entity, int mouse_button); // mouse_button: 0 = left, 1 = middle, 2 = right
     bool WasReleased(const SDL_Scancode &key) { return m_inputs.WasReleased(key); };
     bool IsHeld(const SDL_Scancode &key) { return m_inputs.IsHeld(key); };
+    std::vector<float> GetMouseCoords(){return m_inputs.GetMouseCoords(); };
 
     void AddActiveScene(std::string scene_name);
     void RemoveActiveScene(std::string scene_name);

@@ -94,3 +94,9 @@ bool Cascade::Inputs::IsHeld(const SDL_Scancode& key)
 {
   return m_held_keys[key];
 }
+
+std::vector<float> Cascade::Inputs::GetMouseCoords()
+{
+  std::vector<float> mouse_coords{m_mouse_coords[0], m_mouse_coords[1]};
+  return mouse_coords;
+}

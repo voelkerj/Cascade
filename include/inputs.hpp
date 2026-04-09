@@ -28,6 +28,8 @@ namespace Cascade
     bool WasReleased(const SDL_Scancode &key);
     bool IsHeld(const SDL_Scancode &key);
 
+    std::vector<float> GetMouseCoords();
+
     bool m_left_click{false};
     bool m_right_click{false};
     bool m_middle_click{false};
