@@ -248,7 +248,17 @@ std::vector<float> Cascade::Graphics::ConvertWCStoScreenCoords(float point[2])
   std::vector<float> screen_coords;
 
   screen_coords.push_back((point[0] - (m_camera.pos[0] - (m_camera.FOV[0] / 2)))  * m_scale[0]);
-  screen_coords.push_back(m_window_size[1] - (point[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1]); // - (clipping_rect.h * m_scale[1]
+  screen_coords.push_back(m_window_size[1] - (point[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1]);
+
+  return screen_coords;
+}
+
+std::vector<float> Cascade::Graphics::ConvertWCStoScreenCoords(std::vector<float> point)
+{
+  std::vector<float> screen_coords;
+
+  screen_coords.push_back((point[0] - (m_camera.pos[0] - (m_camera.FOV[0] / 2)))  * m_scale[0]);
+  screen_coords.push_back(m_window_size[1] - (point[1] - (m_camera.pos[1] - (m_camera.FOV[1] / 2))) * m_scale[1]);
 
   return screen_coords;
 }
@@ -393,6 +403,16 @@ void Cascade::Graphics::UpdateDrawingState(DrawingState &drawing_state)
 }
 
 void Cascade::Graphics::DrawLineWCS(float a[2], float b[2], int color[4])
+{
+  std::vector<float> start = ConvertWCStoScreenCoords(a);
+  std::vector<float> end = ConvertWCStoScreenCoords(b);
+
+  SDL_SetRenderDrawColor(m_renderer, color[0], color[1], color[2], color[3]);
+
+  SDL_RenderLine(m_renderer, start[0], start[1], end[0], end[1]);
+}
+
+void Cascade::Graphics::DrawLineWCS(std::vector<float> a, std::vector<float> b, int color[4])
 {
   std::vector<float> start = ConvertWCStoScreenCoords(a);
   std::vector<float> end = ConvertWCStoScreenCoords(b);

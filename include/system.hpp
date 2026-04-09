@@ -94,12 +94,14 @@ namespace Cascade
     int GetScreenWidth();
     int GetScreenHeight();
     std::vector<float> ConvertWCStoScreenCoords(float point[2]);
+    std::vector<float> ConvertWCStoScreenCoords(std::vector<float> point);
 
     void CalculateDestinations(entt::registry &registry);
     void DrawEntities(entt::registry &registry);
     void DrawColliders(entt::registry &registry);
     void UpdateDrawingState(DrawingState& drawing_state);
     void DrawLineWCS(float a[2], float b[2], int color[4]);
+    void DrawLineWCS(std::vector<float> a, std::vector<float> b, int color[4]);
 
     void UpdateUIAnimations(entt::registry &registry);
 
