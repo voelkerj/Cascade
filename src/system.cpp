@@ -229,6 +229,11 @@ void Cascade::Graphics::SetCameraPosition(float position[2])
   UpdateCamera();
 }
 
+std::vector<float> Cascade::Graphics::GetCameraPosition()
+{
+  return {m_camera.pos[0], m_camera.pos[1]};
+}
+
 int Cascade::Graphics::GetScreenWidth()
 {
   int screen_width, screen_height;

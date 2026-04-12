@@ -28,7 +28,7 @@ namespace Cascade
 
   struct Camera
   {
-    // X & Y Position of Camera's origin point (center of screen)
+    // Pixel Coordinates X & Y of Camera's origin point (center of screen)
     float pos[2];
 
     float zoom{1}; // Camera zoom factor. Ratio of pixels per world unit.
@@ -90,6 +90,7 @@ namespace Cascade
     float GetCameraZoom() { return m_camera.zoom; };
     void SetCameraZoom(float zoom);
     void SetCameraPosition(float position[2]);
+    std::vector<float> GetCameraPosition();
 
     int GetScreenWidth();
     int GetScreenHeight();
