@@ -142,8 +142,14 @@ namespace Cascade
 
     float GetCameraZoom() { return GetSystem<Graphics>("graphics")->GetCameraZoom(); };
     void SetCameraZoom(float zoom);
-    void SetCameraPosition(float position[2]);
+    void SetCameraPosition(const std::vector<float> &position);
     std::vector<float> GetCameraPosition() {return GetSystem<Graphics>("graphics")->GetCameraPosition(); };
+
+    // Coordinate Conversions
+    std::vector<float> PCS2WCS(std::vector<float> &pos_PCS) {return GetSystem<Graphics>("graphics")->PCS2WCS(pos_PCS); };
+    std::vector<float> WCS2PCS(std::vector<float> &pos_WCS) {return GetSystem<Graphics>("graphics")->WCS2PCS(pos_WCS); };
+    std::vector<float> PCS2SDL(std::vector<float> &pos_PCS) {return GetSystem<Graphics>("graphics")->PCS2SDL(pos_PCS); };
+    std::vector<float> SDL2PCS(std::vector<float> &pos_SDL) {return GetSystem<Graphics>("graphics")->SDL2PCS(pos_SDL); };
 
     void UpdateCollider(entt::entity entity);
     std::bitset<4> GetAABBCollisions(entt::entity entity_1);

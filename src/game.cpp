@@ -415,7 +415,7 @@ void Cascade::Game::SetCameraZoom(float zoom)
   GetSystem<Graphics>("graphics")->SetCameraZoom(zoom);
 }
 
-void Cascade::Game::SetCameraPosition(float position[2])
+void Cascade::Game::SetCameraPosition(const std::vector<float> &position)
 {
   GetSystem<Graphics>("graphics")->SetCameraPosition(position);
 }

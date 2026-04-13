@@ -28,18 +28,9 @@ namespace Cascade
 
   struct Camera
   {
-    // Pixel Coordinates X & Y of Camera's origin point (center of screen)
-    float pos[2];
-
+    // World Coordinates X & Y of Camera's origin point (center of screen)
+    std::vector<float> pos_WCS{0, 0};
     float zoom{1}; // Camera zoom factor. Ratio of pixels per world unit.
-
-    // Width & Height of the Camera's projected FOV in WCS
-    float FOV[2];
-
-    float screen_top_y;
-    float screen_bottom_y;
-    float screen_left_x;
-    float screen_right_x;
   };
 
   // Shared, read-only animation definition
@@ -71,7 +62,6 @@ namespace Cascade
     void Update() override;
     void Cleanup() override;
 
-    void UpdateCamera();
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
     void StoreSpriteSheet(std::string sheet_name, SDL_Texture *sprite_sheet);
     void GetSpriteSheetSize(std::string sheet_name, float &width, float &height);
@@ -89,13 +79,17 @@ namespace Cascade
 
     float GetCameraZoom() { return m_camera.zoom; };
     void SetCameraZoom(float zoom);
-    void SetCameraPosition(float position[2]);
+    void SetCameraPosition(const std::vector<float> &position);
     std::vector<float> GetCameraPosition();
 
     int GetScreenWidth();
     int GetScreenHeight();
-    std::vector<float> ConvertWCStoScreenCoords(float point[2]);
-    std::vector<float> ConvertWCStoScreenCoords(std::vector<float> point);
+
+    // Coordinate Conversions
+    std::vector<float> PCS2WCS(std::vector<float> &pos_PCS);
+    std::vector<float> WCS2PCS(std::vector<float> &pos_WCS);
+    std::vector<float> PCS2SDL(std::vector<float> &pos_PCS);
+    std::vector<float> SDL2PCS(std::vector<float> &pos_SDL);
 
     void CalculateDestinations(entt::registry &registry);
     void DrawEntities(entt::registry &registry);
@@ -114,10 +108,9 @@ namespace Cascade
 
   private:
     SDL_Window *m_window;
-    int m_window_size[2]; // Width & Height
     SDL_Renderer *m_renderer;
     Camera m_camera;
-    float m_scale[2]; // X & Y scale
+    // float m_scale[2]; // X & Y scale
     std::map<std::string, SDL_Texture *> m_sprite_sheets;
     std::unordered_map<std::string, Animation> m_animations;
     bool m_draw_colliders{false};
