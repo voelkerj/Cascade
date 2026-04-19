@@ -108,7 +108,11 @@ namespace Cascade
 
     void LoadSpriteSheet(std::string sheet_name, std::string sheet_path);
     std::vector<std::vector<int>> ReadTileFile(std::string tile_file);
+    std::string ExtractTileLayerName(const std::string tile_file);
     void LoadTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer);
+    void LoadHexTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer);
+    void SetTileViewAngle(float view_angle) { GetSystem<Graphics>("graphics")->SetTileViewAngle(view_angle); };
+    float GetTileViewAngle() { return GetSystem<Graphics>("graphics")->GetTileViewAngle(); };
     void SetColliderTiles(std::string tile_file, int tile_width, std::vector<int> collider_tiles);
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
     void SetAnimationOffset(std::string animation_name, int dx, int dy);

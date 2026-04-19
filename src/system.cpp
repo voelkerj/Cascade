@@ -263,6 +263,11 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     // Get clipping rectangle based on frame index
     clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
 
+    // if (registry.all_of<TileLayer>(entity))
+    // {
+
+    // }
+
     if (drawing_state.flip)
     {
       point_WCS = {state.X - m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
@@ -279,6 +284,24 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     drawing_state.destination_rect.y = point_SDL[1];
     drawing_state.destination_rect.w = clipping_rect.w * state.ScaleX * m_camera.zoom;
     drawing_state.destination_rect.h = clipping_rect.h * state.ScaleY * m_camera.zoom;
+
+    if (registry.all_of<TileLayer>(entity))
+    {
+      // Get location in WCS coordinates
+      point_SDL = {drawing_state.destination_rect.x, drawing_state.destination_rect.y};
+      point_PCS = SDL2PCS(point_SDL);
+      point_WCS = PCS2WCS(point_PCS);
+
+      // Transform by view angle
+      point_WCS[1] *= cos(m_tile_view_angle * (M_PI / 180));
+
+      // Transform back to SDL coordinates
+      point_PCS = WCS2PCS(point_WCS);
+      point_SDL = PCS2SDL(point_PCS);
+      drawing_state.destination_rect.y = point_SDL[1];
+
+      drawing_state.destination_rect.h *= cos(m_tile_view_angle * (M_PI / 180));
+    }
 
     drawing_state.angle = -state.Angle;
   }

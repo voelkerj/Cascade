@@ -73,6 +73,8 @@ namespace Cascade
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void SetLayer(entt::registry &registry, entt::entity entity, int layer);
     void SetDrawColliders(bool draw_colliders);
+    void SetTileViewAngle(float view_angle) {m_tile_view_angle = view_angle; };
+    float GetTileViewAngle() {return m_tile_view_angle; };
 
     void SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior);
     std::string GetCurrentAnimation(entt::registry &registry, entt::entity entity);
@@ -115,6 +117,7 @@ namespace Cascade
     std::unordered_map<std::string, Animation> m_animations;
     bool m_draw_colliders{false};
     std::map<std::string, std::shared_ptr<TTF_Font>> m_fonts;
+    float m_tile_view_angle{0};
   };
 
   class Audio : public System
