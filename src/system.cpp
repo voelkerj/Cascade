@@ -263,22 +263,21 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     // Get clipping rectangle based on frame index
     clipping_rect = m_animations[drawing_state.animation_name].frames[drawing_state.frame_idx];
 
-    // if (registry.all_of<TileLayer>(entity))
-    // {
-
-    // }
-
-    if (drawing_state.flip)
-    {
-      point_WCS = {state.X - m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
-                   state.Y + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
-    } else {
-      point_WCS = {state.X + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
-                   state.Y + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
-    }
-
+    point_WCS = {state.X, state.Y};
     point_PCS = WCS2PCS(point_WCS);
     point_SDL = PCS2SDL(point_PCS);
+    
+    point_SDL[0] = point_SDL[0] - (clipping_rect.w / 2) * m_camera.zoom * state.ScaleX;
+    point_SDL[1] = point_SDL[1] - (clipping_rect.h / 2) * m_camera.zoom * state.ScaleY;
+
+    // if (drawing_state.flip)
+    // {
+    //   point_SDL = {point_SDL[0] - m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
+    //                point_SDL[1] + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
+    // } else {
+    //   point_SDL = {point_SDL[0] + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
+    //                point_SDL[1] + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
+    // }
 
     drawing_state.destination_rect.x = point_SDL[0];
     drawing_state.destination_rect.y = point_SDL[1];
@@ -439,6 +438,20 @@ void Cascade::Graphics::DrawLineWCS(std::vector<float> a, std::vector<float> b, 
 
   SDL_SetRenderDrawColor(m_renderer, color[0], color[1], color[2], color[3]);
   SDL_RenderLine(m_renderer, start_SDL[0], start_SDL[1], end_SDL[0], end_SDL[1]);
+}
+
+void Cascade::Graphics::DrawCircleWCS(const std::vector<float> center, const float radius, int color[4])
+{
+  for (int theta = 0; theta < 360; theta += 10)
+  {
+    std::vector<float> start{radius * static_cast<float>(cos(theta * (M_PI / 180))) + center[0], 
+                             radius * static_cast<float>(sin(theta * (M_PI / 180))) + center[1]};
+
+    std::vector<float> end{radius * static_cast<float>(cos((theta - 10) * (M_PI / 180))) + center[0], 
+                           radius * static_cast<float>(sin((theta - 10) * (M_PI / 180))) + center[1]};
+
+    DrawLineWCS(start, end, color);
+  }
 }
 
 void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)

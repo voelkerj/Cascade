@@ -130,6 +130,7 @@ namespace Cascade
     void SetDrawColliders(bool draw_colliders) { GetSystem<Graphics>("graphics")->SetDrawColliders(draw_colliders); }; 
     void DrawLineWCS(float a[2], float b[2], int color[4]) { GetSystem<Graphics>("graphics")->DrawLineWCS(a, b, color); };
     void DrawLineWCS(std::vector<float> a, std::vector<float> b, int color[4]) { GetSystem<Graphics>("graphics")->DrawLineWCS(a, b, color); };
+    void DrawCircleWCS(const std::vector<float> center, const float radius, int color[4]) { GetSystem<Graphics>("graphics")->DrawCircleWCS(center, radius, color); };
 
     void SetHoverAnimation(entt::entity button, std::string animation_name);
     void SetClickAnimation(entt::entity button, std::string animation_name);

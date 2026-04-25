@@ -99,6 +99,7 @@ namespace Cascade
     void UpdateDrawingState(DrawingState& drawing_state);
     void DrawLineWCS(float a[2], float b[2], int color[4]);
     void DrawLineWCS(std::vector<float> a, std::vector<float> b, int color[4]);
+    void DrawCircleWCS(const std::vector<float> center, const float radius, int color[4]);
 
     void UpdateUIAnimations(entt::registry &registry);
 
