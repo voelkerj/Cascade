@@ -12,6 +12,7 @@
 namespace Cascade
 {
   struct TileLayer{};
+  struct Tiltable{};
   
   struct State
   {

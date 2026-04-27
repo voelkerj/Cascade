@@ -33,7 +33,7 @@ namespace Cascade
     bool m_left_click{false};
     bool m_right_click{false};
     bool m_middle_click{false};
-    float m_mouse_coords[2]; // Pixel coordinate system
+    float m_mouse_coords[2]; // SDL coordinate system
 
   private:
     std::map<SDL_Scancode, bool> m_pressed_keys;

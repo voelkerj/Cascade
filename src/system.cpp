@@ -270,21 +270,12 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     point_SDL[0] = point_SDL[0] - (clipping_rect.w / 2) * m_camera.zoom * state.ScaleX;
     point_SDL[1] = point_SDL[1] - (clipping_rect.h / 2) * m_camera.zoom * state.ScaleY;
 
-    // if (drawing_state.flip)
-    // {
-    //   point_SDL = {point_SDL[0] - m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
-    //                point_SDL[1] + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
-    // } else {
-    //   point_SDL = {point_SDL[0] + m_animations[drawing_state.animation_name].offset[0] - clipping_rect.w / 2, 
-    //                point_SDL[1] + m_animations[drawing_state.animation_name].offset[1] + clipping_rect.h / 2};
-    // }
-
     drawing_state.destination_rect.x = point_SDL[0];
     drawing_state.destination_rect.y = point_SDL[1];
     drawing_state.destination_rect.w = clipping_rect.w * state.ScaleX * m_camera.zoom;
     drawing_state.destination_rect.h = clipping_rect.h * state.ScaleY * m_camera.zoom;
 
-    if (registry.all_of<TileLayer>(entity))
+    if (registry.all_of<TileLayer>(entity) || registry.all_of<Tiltable>(entity))
     {
       // Get location in WCS coordinates
       point_SDL = {drawing_state.destination_rect.x, drawing_state.destination_rect.y};

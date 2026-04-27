@@ -173,6 +173,9 @@ namespace Cascade
     bool WasReleased(const SDL_Scancode &key) { return m_inputs.WasReleased(key); };
     bool IsHeld(const SDL_Scancode &key) { return m_inputs.IsHeld(key); };
     std::vector<float> GetMouseCoords(){return m_inputs.GetMouseCoords(); };
+    bool LeftClick() {return m_inputs.m_left_click; };
+    bool MiddleClick() {return m_inputs.m_middle_click; };
+    bool RightClick() {return m_inputs.m_right_click; };
 
     void AddActiveScene(std::string scene_name);
     void RemoveActiveScene(std::string scene_name);
