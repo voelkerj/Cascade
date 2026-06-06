@@ -1,6 +1,8 @@
 #ifndef HEX_MATH_H
 #define HEX_MATH_H
 
+// Functions adapted from: https://www.redblobgames.com/grids/hexagons/
+
 #define SQRT_3 1.73205080757
 
 #include <vector>
@@ -32,6 +34,15 @@ namespace HexMath
     coords[1] = r;
   }
 
+  inline void offset_oddr_to_axial(std::vector<int> &coords)
+  {
+    // Convert offset coords to axial
+    // coords input as [row, col]
+    int parity = coords[0] & 1;
+    int q = coords[1] - (coords[0] - parity) / 2.0;
+    coords[1] = q;
+  }
+
   inline void hex_corner_WCS(std::vector<float> &corner, std::vector<float> center, const float size, const float view_angle, const int i)
   {
     // For "pointy" hex orientation
@@ -45,12 +56,11 @@ namespace HexMath
     corner[1] = (center[1] + size * sin(angle)) * cos(view_angle * (M_PI / 180));
   }
 
-  inline void HEX2WCS(std::vector<float> &center, const float size, const float view_angle, const int q, const int r)
+  inline void HEX2WCS(std::vector<float> &center, const float size, const int q, const int r)
   {
-    // For "pointy" hex orientation
-    
-    center[0] = (SQRT_3 * q + SQRT_3 / 2.0 * r) * size;
-    center[1] = ((1.5 * r) * size) * cos(view_angle * (M_PI / 180));
+    // For axial coordinates, "pointy" hex orientation
+    center[0] = (SQRT_3 * q + (SQRT_3 / 2.0) * r) * size;
+    center[1] = (1.5 * r) * size;
   }
 
   inline void WCS2HEX(std::vector<int> &coords, std::vector<float> WCS_coords, const float size, float view_angle)
