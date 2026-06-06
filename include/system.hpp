@@ -119,6 +119,11 @@ namespace Cascade
     bool m_draw_colliders{false};
     std::map<std::string, std::shared_ptr<TTF_Font>> m_fonts;
     float m_tile_view_angle{0};
+
+    // Line rendering storage
+    std::vector<std::vector<float>> line_segment_starts;
+    std::vector<std::vector<float>> line_segment_ends;
+    std::vector<std::vector<int>> line_segment_colors;
   };
 
   class Audio : public System

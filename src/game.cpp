@@ -7,6 +7,7 @@
 
 #include "game.hpp"
 #include "components.hpp"
+#include "hexmath.hpp"
 
 void Cascade::Game::Run()
 {
@@ -193,22 +194,35 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
 
 void Cascade::Game::LoadHexTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer)
 {
+  // Function is for Pointy hexes
+  // tile_size is vertical height of hexes in pixels
+  // row 0, col 0 is 0, 0 in offset odd-r coordinates
+
   std::vector<std::vector<int>> tiles = ReadTileFile(tile_file);
 
   float sheet_width, sheet_height;
   GetSystem<Graphics>("graphics")->GetSpriteSheetSize(sprite_sheet_name, sheet_width, sheet_height);
 
+  std::vector<float> center{0, 0};
+  std::vector<int> hex_coords{0, 0};
+  float hex_size = tile_size / 2.0;
+  float hex_width = hex_size * SQRT_3;
+  float vert_spacing = 1.5 * hex_size;
+  int sheet_width_in_tiles = sheet_width / hex_width;
+  int sheet_height_in_tiles = sheet_height / tile_size;
+
   // Set up temporary render target (texture) to draw the tiles to
   // This is done for efficiency purposes. Instead of having each drawable tile as a seperate entity that must be 
-  // individually re-drawn every frame, we blit them all to a single texture that is drawn a single time every frame.
+  // individually re-drawn every frame, we blit them all to a single texture.
   SDL_Renderer *renderer = GetSystem<Graphics>("graphics")->GetRenderer();
   SDL_Window *window = GetSystem<Graphics>("graphics")->GetWindow();
-  SDL_Texture *tile_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tiles[0].size() * tile_size, tiles.size() * tile_size);
-  SDL_SetRenderTarget(renderer, tile_texture);
 
-  float hex_size = tile_size / 2.0;
-  float horz_spacing = sqrt(3) * hex_size;
-  float vert_spacing = 1.5 * hex_size;
+  // Determine size of texture
+  int texture_width = tiles[0].size() * tile_size;
+  int texture_height = tiles.size() * tile_size;
+
+  SDL_Texture *tile_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, texture_width, texture_height);
+  SDL_SetRenderTarget(renderer, tile_texture);
 
   for (int row = 0; row < tiles.size(); row++)
   {
@@ -220,15 +234,19 @@ void Cascade::Game::LoadHexTileLayer(std::string tile_file, int tile_size, std::
         // We still want this in case we wish to do anything with the tiles besides drawing them (such as colliders)
         entt::entity tile = CreateEntity();
 
+        // Get Axial Hex coords
+        // row and column are "offset" coords
+        hex_coords[0] = row;
+        hex_coords[1] = col;
+        HexMath::offset_oddr_to_axial(hex_coords);
+
+        // std::cout << hex_coords[0] << ", " << hex_coords[1] << "\n";
+
         // Set State
         Cascade::State state;
-        if (row % 2 != 0) // if row is odd
-        {
-          state.X = col * horz_spacing + horz_spacing / 2.0;
-        } else {
-          state.X = col * horz_spacing;
-        }
-        state.Y = -row * vert_spacing;
+        HexMath::HEX2WCS(center, hex_size, hex_coords[1], hex_coords[0]);
+        state.X = center[0];
+        state.Y = center[1];
         AddComponent(tile, state);
 
         // Generate animation name
@@ -240,20 +258,19 @@ void Cascade::Game::LoadHexTileLayer(std::string tile_file, int tile_size, std::
           CreateAnimation(animation_name, sprite_sheet_name, 0);
 
           // Determine X and Y coordinates of tile on sprite sheet
-          int sheet_width_in_tiles = sheet_width / tile_size;
-          int sheet_height_in_tiles = sheet_height / tile_size;
-
           int tile_row = floor(tiles[row][col] / sheet_width_in_tiles);
           int tile_col = tiles[row][col] - sheet_width_in_tiles * tile_row;
 
-          AddFrame(animation_name, (tile_col)*tile_size, (tile_row)*tile_size, tile_size, tile_size);
+          AddFrame(animation_name, (tile_col) * tile_size, (tile_row) * tile_size, tile_size, tile_size);
         }
 
         SDL_Texture *source_sprite_sheet = GetSystem<Graphics>("graphics")->GetSpriteSheet(sprite_sheet_name);
         SDL_FRect frame = GetSystem<Graphics>("graphics")->GetFrame(animation_name, 0);
         SDL_FRect destination;
+
         destination.x = state.X;
-        destination.y = -state.Y;
+        destination.y = state.Y;
+
         destination.w = tile_size;
         destination.h = tile_size;
 
@@ -279,8 +296,8 @@ void Cascade::Game::LoadHexTileLayer(std::string tile_file, int tile_size, std::
   SetLayer(tile_layer, drawing_layer);
 
   State tile_layer_state;
-  tile_layer_state.X = sheet_width / 2 - tile_size / 2;
-  tile_layer_state.Y = -sheet_height / 2 + tile_size / 2;
+  tile_layer_state.X = sheet_width / 2 - hex_size;
+  tile_layer_state.Y = -sheet_height / 2 + hex_size;
   AddComponent(tile_layer, tile_layer_state);
 
   // Return rendering back to the window

@@ -52,6 +52,16 @@ void Cascade::Graphics::Update()
     DrawColliders(registry);
   }
 
+  for (int line_idx = 0; line_idx < line_segment_starts.size(); line_idx++)
+  {
+    SDL_SetRenderDrawColor(m_renderer, line_segment_colors[line_idx][0], line_segment_colors[line_idx][1], line_segment_colors[line_idx][2], line_segment_colors[line_idx][3]);
+    SDL_RenderLine(m_renderer, line_segment_starts[line_idx][0], line_segment_starts[line_idx][1], line_segment_ends[line_idx][0], line_segment_ends[line_idx][1]);
+  }
+
+  line_segment_starts.clear();
+  line_segment_ends.clear();
+  line_segment_colors.clear();
+
   SDL_SetRenderDrawColor(m_renderer, 0x01, 0x06, 0x0d, 0xFF);
   SDL_RenderPresent(m_renderer);
 }
@@ -413,8 +423,9 @@ void Cascade::Graphics::DrawLineWCS(float a[2], float b[2], int color[4])
   point_PCS = WCS2PCS(point_WCS);
   std::vector<float> end_SDL = PCS2SDL(point_PCS);
 
-  SDL_SetRenderDrawColor(m_renderer, color[0], color[1], color[2], color[3]);
-  SDL_RenderLine(m_renderer, start_SDL[0], start_SDL[1], end_SDL[0], end_SDL[1]);
+  line_segment_starts.push_back(start_SDL);
+  line_segment_ends.push_back(end_SDL);
+  line_segment_colors.push_back({color[0], color[1], color[2], color[3]});
 }
 
 void Cascade::Graphics::DrawLineWCS(std::vector<float> a, std::vector<float> b, int color[4])
@@ -427,8 +438,9 @@ void Cascade::Graphics::DrawLineWCS(std::vector<float> a, std::vector<float> b, 
   point_PCS = WCS2PCS(b);
   std::vector<float> end_SDL = PCS2SDL(point_PCS);
 
-  SDL_SetRenderDrawColor(m_renderer, color[0], color[1], color[2], color[3]);
-  SDL_RenderLine(m_renderer, start_SDL[0], start_SDL[1], end_SDL[0], end_SDL[1]);
+  line_segment_starts.push_back(start_SDL);
+  line_segment_ends.push_back(end_SDL);
+  line_segment_colors.push_back({color[0], color[1], color[2], color[3]});
 }
 
 void Cascade::Graphics::DrawCircleWCS(const std::vector<float> center, const float radius, int color[4])
