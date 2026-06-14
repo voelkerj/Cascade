@@ -48,7 +48,7 @@ namespace HexMath
     int coords[2]{0, 0};
   };
 
-  inline void cube_round(std::vector<int> &coords, const float q_in, const float r_in, const float s_in)
+  inline void cube_round(Hex &coords, const float q_in, const float r_in, const float s_in)
   {
     int q = round(q_in);
     int r = round(r_in);
@@ -96,7 +96,7 @@ namespace HexMath
     center[1] = -(1.5 * r) * size; // -1 becuase SDL is inverted from WCS
   }
 
-  inline void WCS2HEX(std::vector<int> &coords, std::vector<float> WCS_coords, const float size)
+  inline void WCS2HEX(Hex &coords, std::vector<float> WCS_coords, const float size)
   {
     WCS_coords[1] *= -1; // Because SDL is inverted from WCS
 
