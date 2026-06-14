@@ -7,5 +7,6 @@
 #include "inputs.hpp"
 #include "cascade_math.hpp"
 #include "hexmath.hpp"
+#include "events.hpp"
 
 #endif

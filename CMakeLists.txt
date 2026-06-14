@@ -7,7 +7,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/src/game.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/scene.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/inputs.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/system.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/cascade_math.cpp)
+${CMAKE_CURRENT_SOURCE_DIR}/src/cascade_math.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/src/events.cpp)
 
 set(SDLTTF_VENDORED ON CACHE BOOL "Use vendored libraries for SDL_ttf")
 

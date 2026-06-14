@@ -8,6 +8,7 @@
 #include "game.hpp"
 #include "components.hpp"
 #include "hexmath.hpp"
+#include "../include/events.hpp"
 
 void Cascade::Game::Run()
 {
@@ -20,6 +21,7 @@ void Cascade::Game::Run()
 
   AddSystem<Graphics>("graphics");
   AddSystem<Audio>("audio");
+  AddSystem<Events>("events");
 
   while (Continue())
   {
