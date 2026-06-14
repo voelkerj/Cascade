@@ -212,12 +212,12 @@ void Cascade::Graphics::SetCameraZoom(float zoom)
 
 void Cascade::Graphics::SetCameraPosition(const std::vector<float> &position)
 {
-  m_camera.pos_WCS = position;
+  m_camera.pos_uWCS = position;
 }
 
 std::vector<float> Cascade::Graphics::GetCameraPosition()
 {
-  return m_camera.pos_WCS;
+  return m_camera.pos_uWCS;
 }
 
 int Cascade::Graphics::GetScreenWidth()
@@ -234,16 +234,51 @@ int Cascade::Graphics::GetScreenHeight()
   return screen_height;
 }
 
+// World Coordinate System (WCS)
+// Units are "world units" (arbitrary)
+// Rotated about x-axis by view angle
+
+// Unrotated WCS
+// Same as WCS, but not rotated about x-axis by view angle
+// Ratio of pixels to unrotated world units is camera zoom
+// Camera position is unrotated WCS
+
+// Pixel Coordinate System (PCS)
+// Origin is center of screen
+// x is positive right
+// y is positive up
+
+// SDL Coordinate System
+// Origin is top-left of screen
+// x is positive right
+// y is positive down
+
+std::vector<float> Cascade::Graphics::WCS2uWCS(std::vector<float> &pos_WCS)
+{
+  return {pos_WCS[0],
+          pos_WCS[1] * (float)cos(GetViewAngle() * (M_PI / 180.0))};
+}
+
+std::vector<float> Cascade::Graphics::uWCS2WCS(std::vector<float> &pos_uWCS)
+{
+  return {pos_uWCS[0],
+          pos_uWCS[1] / (float)cos(GetViewAngle() * (M_PI / 180.0))};
+}
+
 std::vector<float> Cascade::Graphics::PCS2WCS(std::vector<float> &pos_PCS)
 {
-  return {pos_PCS[0] / m_camera.zoom + m_camera.pos_WCS[0], 
-          pos_PCS[1] / m_camera.zoom + m_camera.pos_WCS[1]};
+  std::vector<float> pos_uWCS = {pos_PCS[0] / m_camera.zoom + m_camera.pos_uWCS[0],
+                                 pos_PCS[1] / m_camera.zoom + m_camera.pos_uWCS[1]};
+
+  return uWCS2WCS(pos_uWCS);
 }
 
 std::vector<float> Cascade::Graphics::WCS2PCS(std::vector<float> &pos_WCS)
 {
-  return {(pos_WCS[0] - m_camera.pos_WCS[0]) * m_camera.zoom,
-          (pos_WCS[1] - m_camera.pos_WCS[1]) * m_camera.zoom};
+  std::vector<float> pos_uWCS = WCS2uWCS(pos_WCS);
+
+  return {(pos_uWCS[0] - m_camera.pos_uWCS[0]) * m_camera.zoom,
+          (pos_uWCS[1] - m_camera.pos_uWCS[1]) * m_camera.zoom};
 }
 
 std::vector<float> Cascade::Graphics::PCS2SDL(std::vector<float> &pos_PCS)
@@ -285,22 +320,14 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     drawing_state.destination_rect.w = clipping_rect.w * state.ScaleX * m_camera.zoom;
     drawing_state.destination_rect.h = clipping_rect.h * state.ScaleY * m_camera.zoom;
 
-    if (registry.all_of<TileLayer>(entity) || registry.all_of<Tiltable>(entity))
+    // if entity is a tiltable
+    if (registry.all_of<Tiltable>(entity))
     {
-      // Get location in WCS coordinates
-      point_SDL = {drawing_state.destination_rect.x, drawing_state.destination_rect.y};
-      point_PCS = SDL2PCS(point_SDL);
-      point_WCS = PCS2WCS(point_PCS);
+      // Adjust Y coordinate by half on required compression
+      drawing_state.destination_rect.y += (drawing_state.destination_rect.h - drawing_state.destination_rect.h * (float)cos(m_view_angle * (M_PI / 180.0))) / 2;
 
-      // Transform by view angle
-      point_WCS[1] *= cos(m_tile_view_angle * (M_PI / 180));
-
-      // Transform back to SDL coordinates
-      point_PCS = WCS2PCS(point_WCS);
-      point_SDL = PCS2SDL(point_PCS);
-      drawing_state.destination_rect.y = point_SDL[1];
-
-      drawing_state.destination_rect.h *= cos(m_tile_view_angle * (M_PI / 180));
+      // Compress height
+      drawing_state.destination_rect.h *= cos(m_view_angle * (M_PI / 180.0));
     }
 
     drawing_state.angle = -state.Angle;

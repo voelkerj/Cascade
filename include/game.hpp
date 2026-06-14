@@ -10,6 +10,7 @@
 #include "inputs.hpp"
 #include "components.hpp"
 #include "scene.hpp"
+#include "hexmath.hpp"
 
 #include "../external/SDL/include/SDL3/SDL.h"
 #include "../external/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
@@ -111,9 +112,10 @@ namespace Cascade
     std::string ExtractTileLayerName(const std::string tile_file);
     void LoadTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer);
     void LoadHexTileLayer(std::string tile_file, int tile_size, std::string sprite_sheet_name, int drawing_layer);
-    void SetTileViewAngle(float view_angle) { GetSystem<Graphics>("graphics")->SetTileViewAngle(view_angle); };
-    float GetTileViewAngle() { return GetSystem<Graphics>("graphics")->GetTileViewAngle(); };
+    void SetViewAngle(float view_angle) { GetSystem<Graphics>("graphics")->SetViewAngle(view_angle); };
+    float GetViewAngle() { return GetSystem<Graphics>("graphics")->GetViewAngle(); };
     void SetColliderTiles(std::string tile_file, int tile_width, std::vector<int> collider_tiles);
+    std::vector<HexMath::Hex> GetObstacleHexes(std::string tile_file, std::vector<int> obstacle_hexes);
     void CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval);
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void AddFrame(std::string animation_name, int x, int y, int w, int h);

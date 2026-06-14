@@ -28,8 +28,8 @@ namespace Cascade
 
   struct Camera
   {
-    // World Coordinates X & Y of Camera's origin point (center of screen)
-    std::vector<float> pos_WCS{0, 0};
+    // Unrotated World Coordinates X & Y of Camera's origin point (center of screen)
+    std::vector<float> pos_uWCS{0, 0};
     float zoom{1}; // Camera zoom factor. Ratio of pixels per world unit.
   };
 
@@ -73,8 +73,8 @@ namespace Cascade
     void SetAnimationOffset(std::string animation_name, int dx, int dy);
     void SetLayer(entt::registry &registry, entt::entity entity, int layer);
     void SetDrawColliders(bool draw_colliders);
-    void SetTileViewAngle(float view_angle) {m_tile_view_angle = view_angle; };
-    float GetTileViewAngle() {return m_tile_view_angle; };
+    void SetViewAngle(float view_angle) {m_view_angle = view_angle; };
+    float GetViewAngle() {return m_view_angle; };
 
     void SetCurrentAnimation(entt::registry &registry, entt::entity entity, std::string animation_name, int end_behavior);
     std::string GetCurrentAnimation(entt::registry &registry, entt::entity entity);
@@ -88,6 +88,8 @@ namespace Cascade
     int GetScreenHeight();
 
     // Coordinate Conversions
+    std::vector<float> WCS2uWCS(std::vector<float> &pos_WCS);
+    std::vector<float> uWCS2WCS(std::vector<float> &pos_uWCS);
     std::vector<float> PCS2WCS(std::vector<float> &pos_PCS);
     std::vector<float> WCS2PCS(std::vector<float> &pos_WCS);
     std::vector<float> PCS2SDL(std::vector<float> &pos_PCS);
@@ -118,7 +120,7 @@ namespace Cascade
     std::unordered_map<std::string, Animation> m_animations;
     bool m_draw_colliders{false};
     std::map<std::string, std::shared_ptr<TTF_Font>> m_fonts;
-    float m_tile_view_angle{0};
+    float m_view_angle{0};
 
     // Line rendering storage
     std::vector<std::vector<float>> line_segment_starts;

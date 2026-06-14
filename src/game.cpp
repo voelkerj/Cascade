@@ -170,6 +170,8 @@ void Cascade::Game::LoadTileLayer(std::string tile_file, int tile_size, std::str
 
   // Setup tile layer entity
   entt::entity tile_layer = CreateEntity();
+  AddComponent(tile_layer, TileLayer{});
+  AddComponent(tile_layer, Tiltable());
 
   std::string tile_layer_filename = ExtractTileLayerName(tile_file);
 
@@ -236,15 +238,13 @@ void Cascade::Game::LoadHexTileLayer(std::string tile_file, int tile_size, std::
 
         // Get Axial Hex coords
         // row and column are "offset" coords
-        hex_coords[0] = row;
+        hex_coords[0] = -row;
         hex_coords[1] = col;
         HexMath::offset_oddr_to_axial(hex_coords);
 
-        // std::cout << hex_coords[0] << ", " << hex_coords[1] << "\n";
-
         // Set State
         Cascade::State state;
-        HexMath::HEX2WCS(center, hex_size, hex_coords[1], hex_coords[0]);
+        HexMath::HEX2WCS(center, hex_size, hex_coords[0], hex_coords[1]);
         state.X = center[0];
         state.Y = center[1];
         AddComponent(tile, state);
@@ -282,6 +282,7 @@ void Cascade::Game::LoadHexTileLayer(std::string tile_file, int tile_size, std::
   // Setup tile layer entity
   entt::entity tile_layer = CreateEntity();
   AddComponent(tile_layer, TileLayer{});
+  AddComponent(tile_layer, Tiltable());
 
   std::string tile_layer_filename = ExtractTileLayerName(tile_file);
 
@@ -388,6 +389,39 @@ void Cascade::Game::SetColliderTiles(std::string tile_file, int tile_size, std::
       }
     }
   }
+}
+
+std::vector<HexMath::Hex> Cascade::Game::GetObstacleHexes(std::string tile_file, std::vector<int> obstacle_hexes_types)
+{
+  std::vector<std::vector<int>> tiles = ReadTileFile(tile_file);
+
+  std::vector<HexMath::Hex> obstacle_hexes;
+
+  std::vector<int> hex_coords{0, 0};
+
+  for (int row = 0; row < tiles.size(); row++)
+  {
+    for (int col = 0; col < tiles[row].size(); col++)
+    {
+      // Check if this tile value is in the obstacle_hexes vector
+      auto it = std::find(obstacle_hexes_types.begin(), obstacle_hexes_types.end(), tiles[row][col]);
+      
+      // If it is, add this hex to the obstacle hex coords vector
+      if (it != obstacle_hexes_types.end())
+      {
+        // Get Axial Hex coords
+        // row and column are "offset" coords
+        hex_coords[0] = row;
+        hex_coords[1] = col;
+        HexMath::offset_oddr_to_axial(hex_coords);
+        
+        // Append axial coordinates to return vector
+        obstacle_hexes.push_back({hex_coords[0], hex_coords[1]});
+      }
+    }
+  }
+
+  return obstacle_hexes;
 }
 
 void Cascade::Game::CreateAnimation(std::string animation_name, std::string sheet_name, int update_interval)
