@@ -49,6 +49,7 @@ void Cascade::Events::ResolveEvent(std::string event_name)
   }
 }
 
+// Returns true if click is resolved, false if not
 bool Cascade::Events::IsResolved(std::string event_name)
 {
   if (EventExists(event_name))

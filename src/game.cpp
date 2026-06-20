@@ -243,10 +243,11 @@ void Cascade::Game::LoadHexTileLayer(std::string tile_file, int tile_size, std::
         hex_coords[0] = -row;
         hex_coords[1] = col;
         HexMath::offset_oddr_to_axial(hex_coords);
+        HexMath::Hex temp_hex(hex_coords[0], hex_coords[1]);
 
         // Set State
         Cascade::State state;
-        HexMath::HEX2WCS(center, hex_size, hex_coords[0], hex_coords[1]);
+        HexMath::HEX2WCS(center, hex_size, temp_hex);
         state.X = center[0];
         state.Y = center[1];
         AddComponent(tile, state);

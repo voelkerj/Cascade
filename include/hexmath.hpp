@@ -15,8 +15,8 @@ namespace HexMath
 
   class Hex
   {
-    public:
-    Hex(){};
+  public:
+    Hex() {};
 
     Hex(int coord_1, int coord_2)
     {
@@ -25,7 +25,7 @@ namespace HexMath
     }
 
     // Coordinate access via brackets
-    inline int& operator[](int idx)
+    inline int &operator[](int idx)
     {
       if (idx < 0 || idx > 1)
       {
@@ -44,7 +44,7 @@ namespace HexMath
       return false;
     }
 
-    private:
+  private:
     int coords[2]{0, 0};
   };
 
@@ -89,11 +89,11 @@ namespace HexMath
     corner[1] = center[1] + size * sin(angle);
   }
 
-  inline void HEX2WCS(std::vector<float> &center, const float size, const int q, const int r)
+  inline void HEX2WCS(std::vector<float> &center, const float size, Hex hex)
   {
     // For axial coordinates, "pointy" hex orientation
-    center[0] = (SQRT_3 * q + (SQRT_3 / 2.0) * r) * size;
-    center[1] = -(1.5 * r) * size; // -1 becuase SDL is inverted from WCS
+    center[0] = (SQRT_3 * hex[0] + (SQRT_3 / 2.0) * hex[1]) * size;
+    center[1] = -(1.5 * hex[1]) * size; // -1 becuase SDL is inverted from WCS
   }
 
   inline void WCS2HEX(Hex &coords, std::vector<float> WCS_coords, const float size)
@@ -108,9 +108,11 @@ namespace HexMath
     cube_round(coords, q, r, s);
   }
 
-  inline int axial_distance(const int q1, const int r1, const int q2, const int r2)
+  inline int axial_distance(Hex start, Hex end)
   {
-    return (abs(q1 - q2) + abs(q1 + r1 - q2 - r2) + abs(r1 - r2)) / 2;
+    // const int q1, const int r1, const int q2, const int r2
+    // return (abs(q1 - q2) + abs(q1 + r1 - q2 - r2) + abs(r1 - r2)) / 2;
+    return (abs(start[0] - end[0]) + abs(start[0] + start[1] - end[0] - end[1]) + abs(start[1] - end[1])) / 2;
   }
 
   inline std::vector<Hex> within_range(Hex &start, int range)
@@ -168,6 +170,107 @@ namespace HexMath
       }
     }
     return visited;
+  }
+
+  class Node
+  {
+  public:
+    Node(Hex hex_in, int g_in, int heuristic, Hex previous_in) : hex(hex_in), g(g_in), h(heuristic), previous(previous_in) {};
+
+    int cost() { return g + h; };
+
+    Hex hex;
+    int g;
+    int h;
+    Hex previous;
+  };
+
+  inline std::vector<Hex> a_star_hex(Hex start, Hex goal, std::vector<Hex> obstacles)
+  {
+    Hex neighbor;
+    std::vector<Node> fringes;
+    std::vector<Node> checked;
+
+    bool found_path{false};
+    int lowest_cost{0};
+    int cheapest_idx{0};
+
+    int h = axial_distance(start, goal);
+    int g = 0;
+    Node current_node(start, g, h, start);
+    fringes.push_back(current_node);
+
+    while (!found_path)
+    {
+      // find fringe node with lowest cost
+      lowest_cost = 1e10;
+
+      for (int idx = 0; idx < fringes.size(); idx++)
+      {
+        if (fringes[idx].cost() < lowest_cost)
+        {
+          lowest_cost = fringes[idx].cost();
+          cheapest_idx = idx;
+        }
+      }
+
+      // remove cheapest fringe node
+      current_node = fringes[cheapest_idx];
+      fringes.erase(fringes.begin() + cheapest_idx);
+
+      // copy to checked
+      checked.push_back(current_node);
+
+      // if it equals the goal
+      if (current_node.hex == goal)
+      {
+        found_path = true;
+      }
+      else
+      {
+        // for each neighbor of current
+        for (int direction = 0; direction < 6; direction++)
+        {
+          neighbor = Hex(current_node.hex[0] + axial_direction_vectors[direction][0], current_node.hex[1] + axial_direction_vectors[direction][1]);
+
+          // if not obstacle
+          if (std::find(obstacles.begin(), obstacles.end(), neighbor) == obstacles.end())
+          {
+            // add to fringe
+            fringes.push_back({neighbor, current_node.g + 1, axial_distance(neighbor, goal), current_node.hex});
+          }
+        }
+      }
+    }
+
+    // Reconstruct path
+    std::vector<Hex> path;
+    path.push_back(current_node.hex); // goal
+
+    while (true)
+    {
+      path.push_back(current_node.previous);
+      
+      if (current_node.previous == start)
+      {
+        break;
+      }
+
+      // set current_node to previous node
+      int idx{0};
+      for (idx = 0; idx < checked.size(); idx++)
+      {
+        if (checked[idx].hex == current_node.previous)
+        {
+          break;
+        }
+      }
+
+      // set this as new current node
+      current_node = checked[idx];
+    }
+
+    return path;
   }
 };
 
