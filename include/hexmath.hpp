@@ -8,6 +8,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <queue>
 
 namespace HexMath
 {
@@ -177,7 +178,7 @@ namespace HexMath
   public:
     Node(Hex hex_in, int g_in, int heuristic, Hex previous_in) : hex(hex_in), g(g_in), h(heuristic), previous(previous_in) {};
 
-    int cost() { return g + h; };
+    int cost() const { return g + h; };
 
     Hex hex;
     int g;
@@ -185,10 +186,18 @@ namespace HexMath
     Hex previous;
   };
 
+  struct NodeCompare
+  {
+    bool operator()(const Node& n1, const Node& n2)
+    {
+      return n1.cost() > n2.cost();
+    }
+  };
+
   inline std::vector<Hex> a_star_hex(Hex start, Hex goal, std::vector<Hex> obstacles)
   {
     Hex neighbor;
-    std::vector<Node> fringes;
+    std::priority_queue<Node, std::vector<Node>, NodeCompare> fringes;
     std::vector<Node> checked;
 
     bool found_path{false};
@@ -198,25 +207,12 @@ namespace HexMath
     int h = axial_distance(start, goal);
     int g = 0;
     Node current_node(start, g, h, start);
-    fringes.push_back(current_node);
+    fringes.push(current_node);
 
     while (!found_path)
     {
-      // find fringe node with lowest cost
-      lowest_cost = 1e10;
-
-      for (int idx = 0; idx < fringes.size(); idx++)
-      {
-        if (fringes[idx].cost() < lowest_cost)
-        {
-          lowest_cost = fringes[idx].cost();
-          cheapest_idx = idx;
-        }
-      }
-
-      // remove cheapest fringe node
-      current_node = fringes[cheapest_idx];
-      fringes.erase(fringes.begin() + cheapest_idx);
+      current_node = fringes.top();
+      fringes.pop();
 
       // copy to checked
       checked.push_back(current_node);
@@ -237,7 +233,7 @@ namespace HexMath
           if (std::find(obstacles.begin(), obstacles.end(), neighbor) == obstacles.end())
           {
             // add to fringe
-            fringes.push_back({neighbor, current_node.g + 1, axial_distance(neighbor, goal), current_node.hex});
+            fringes.push({neighbor, current_node.g + 1, axial_distance(neighbor, goal), current_node.hex});
           }
         }
       }
