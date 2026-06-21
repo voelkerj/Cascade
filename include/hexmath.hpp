@@ -25,7 +25,7 @@ namespace HexMath
       coords[1] = coord_2;
     }
 
-    // Coordinate access via brackets
+    // We need non-const so we can assign values
     inline int &operator[](int idx)
     {
       if (idx < 0 || idx > 1)
@@ -35,8 +35,18 @@ namespace HexMath
       return coords[idx];
     }
 
+    // we need const so this works with the const functors below
+    inline int const &operator[](int idx) const
+    {
+      if (idx < 0 || idx > 1)
+      {
+        throw std::out_of_range("Hex index out of range");
+      }
+      return coords[idx];
+    }
+
     // Check if hexes are the same
-    inline bool operator==(Hex compare_hex)
+    inline bool operator==(Hex const& compare_hex) const
     {
       if (compare_hex[0] == coords[0] && compare_hex[1] == coords[1])
       {
@@ -47,6 +57,26 @@ namespace HexMath
 
   private:
     int coords[2]{0, 0};
+  };
+
+  // This functor tells the unordered_map below how to hash a Hex object. 
+  // Since Hex is a custom class, the unordered_map will not know how to hash it.
+  // Why am I using an unordered_map and not just a map? The unordered map is faster
+  // because it will first store things in a bucket (hash) then use the standard ==
+  // lookup to find the key within that bucket. Apparently, maps are O(log(n)) and
+  // unordered_maps are O(1).
+  struct HexHash {
+    size_t operator()(Hex const& hex) const
+    {
+      // Our hash function for a hex is based on the only identifying information we
+      // actually have: it's q an r coordinates. We take the q coordinate and shift it
+      // 32 bits, so now the first 32 bits are zeros. Then we inclusive OR it with the
+      // r coordinate, which is in the bottom 32 bits. This effectively merges the two
+      // 32 bit q and r values into a single 64 bit number.
+      // Assumptions are that q and r are not larger than 32 bits and that we are 
+      // compiling a 64 bit executable.
+      return ((size_t)hex[0] << 32 | (size_t)hex[1]);
+    }
   };
 
   inline void cube_round(Hex &coords, const float q_in, const float r_in, const float s_in)
@@ -138,11 +168,15 @@ namespace HexMath
 
   inline std::vector<Hex> hex_reachable(Hex start, std::vector<Hex> obstacles, int range)
   {
-    std::vector<Hex> visited;
-    visited.push_back(start);
+    std::unordered_set<Hex, HexHash> obstacle_set(obstacles.begin(), obstacles.end());
+    std::unordered_set<Hex, HexHash> visited{};
+    visited.insert(start);
 
-    std::vector<std::vector<Hex>> fringes(range + 1); // first dimension is outward layer number (steps away from start)
-    fringes[0].push_back(start);
+    std::vector<Hex> current_layer;
+    std::vector<Hex> previous_layer;
+    // std::vector<std::vector<Hex>> fringes(range + 1); // first dimension is outward layer number (steps away from start)
+    // fringes[0].push_back(start);
+    previous_layer.push_back(start);
 
     Hex neighbor;
 
@@ -150,27 +184,41 @@ namespace HexMath
     for (int k = 1; k <= range; k++)
     {
       // for each hex in the previous layer
-      for (int hex_idx = 0; hex_idx < fringes[k - 1].size(); hex_idx++)
+      for (int hex_idx = 0; hex_idx < previous_layer.size(); hex_idx++)
       {
         // for each of the six directions
         for (int direction = 0; direction < 6; direction++)
         {
-          neighbor = Hex(fringes[k - 1][hex_idx][0] + axial_direction_vectors[direction][0], fringes[k - 1][hex_idx][1] + axial_direction_vectors[direction][1]);
+          neighbor = Hex(previous_layer[hex_idx][0] + axial_direction_vectors[direction][0], previous_layer[hex_idx][1] + axial_direction_vectors[direction][1]);
 
           // if neighbor not blocked
-          if (std::find(obstacles.begin(), obstacles.end(), neighbor) == obstacles.end())
+          if (obstacle_set.find(neighbor) == obstacle_set.end())
           {
             // if neighbor not already in visited
-            if (std::find(visited.begin(), visited.end(), neighbor) == visited.end())
+            if (visited.find(neighbor) == visited.end())
             {
-              visited.push_back(neighbor);
-              fringes[k].push_back(neighbor);
+              visited.insert(neighbor);
+              current_layer.push_back(neighbor);
             }
           }
         }
       }
+
+      previous_layer = current_layer;
+      current_layer.clear();
     }
-    return visited;
+
+    // Convert back to vector
+    std::vector<Hex> result;
+    result.reserve(visited.size());
+    int idx = 0;
+    for (const auto& hex : visited)
+    {
+      result.push_back(hex);
+      idx++;
+    }
+
+    return result;
   }
 
   class Node
@@ -186,6 +234,7 @@ namespace HexMath
     Hex previous;
   };
 
+  // This functor tells the priority_queue how to compare hexes
   struct NodeCompare
   {
     bool operator()(const Node& n1, const Node& n2)
@@ -198,16 +247,21 @@ namespace HexMath
   {
     Hex neighbor;
     std::priority_queue<Node, std::vector<Node>, NodeCompare> fringes;
+    // We also store the fringes in a map since we can't search through a priority_queue.
+    // We need to be able to see if a Hex is already in the queue so we don't duplicate it.
+    std::unordered_map<Hex, int, HexHash> fringes_map;  
     std::vector<Node> checked;
 
     bool found_path{false};
     int lowest_cost{0};
     int cheapest_idx{0};
 
+    // TODO: Update heuristic to also account for vector with smallest angle to goal
     int h = axial_distance(start, goal);
     int g = 0;
     Node current_node(start, g, h, start);
     fringes.push(current_node);
+    fringes_map[start] = g + h;
 
     while (!found_path)
     {
@@ -232,8 +286,18 @@ namespace HexMath
           // if not obstacle
           if (std::find(obstacles.begin(), obstacles.end(), neighbor) == obstacles.end())
           {
-            // add to fringe
-            fringes.push({neighbor, current_node.g + 1, axial_distance(neighbor, goal), current_node.hex});
+            // Check if this we've already reached this hex with equal or better cost
+            h = axial_distance(neighbor, goal);
+            g = current_node.g + 1;
+
+            if (fringes_map.contains(neighbor) && (h + g) >= fringes_map[neighbor])
+            {
+              continue;
+            }
+
+            // Othewise, add to fringes
+            fringes.push({neighbor, g, h, current_node.hex});
+            fringes_map[neighbor] = g + h;
           }
         }
       }
