@@ -224,13 +224,13 @@ namespace HexMath
   class Node
   {
   public:
-    Node(Hex hex_in, int g_in, int heuristic, Hex previous_in) : hex(hex_in), g(g_in), h(heuristic), previous(previous_in) {};
+    Node(Hex hex_in, int g_in, float heuristic, Hex previous_in) : hex(hex_in), g(g_in), h(heuristic), previous(previous_in) {};
 
-    int cost() const { return g + h; };
+    float cost() const { return g + h; };
 
     Hex hex;
     int g;
-    int h;
+    float h;
     Hex previous;
   };
 
@@ -243,13 +243,35 @@ namespace HexMath
     }
   };
 
-  inline std::vector<Hex> a_star_hex(Hex start, Hex goal, std::vector<Hex> obstacles)
+  inline float compute_heuristic(Hex start, Hex goal, Hex hex, float hex_size)
+  {
+    // Compute distance Hex is from straight line
+    std::vector<float> start_WCS{0, 0};
+    std::vector<float> goal_WCS{0, 0};
+    std::vector<float> hex_WCS{0, 0};
+
+    HEX2WCS(start_WCS, hex_size, start);
+    HEX2WCS(goal_WCS, hex_size, goal);
+    HEX2WCS(hex_WCS, hex_size, hex);
+
+    float numer = abs((goal_WCS[1] - start_WCS[1]) * hex_WCS[0] - (goal_WCS[0] - start_WCS[0]) * hex_WCS[1] + goal_WCS[0] * start_WCS[1] - goal_WCS[1] * start_WCS[0]);
+    float denom = sqrt( pow(goal_WCS[1] - start_WCS[1], 2) + pow(goal_WCS[0] - start_WCS[0], 2) );
+
+    float distance_from_line = numer / denom;
+
+    // Compute axial hex distance to goal
+    int hex_distance = axial_distance(hex, goal);
+
+    return hex_distance + distance_from_line;
+  }
+
+  inline std::vector<Hex> a_star_hex(Hex start, Hex goal, std::vector<Hex> obstacles, float hex_size)
   {
     Hex neighbor;
     std::priority_queue<Node, std::vector<Node>, NodeCompare> fringes;
     // We also store the fringes in a map since we can't search through a priority_queue.
     // We need to be able to see if a Hex is already in the queue so we don't duplicate it.
-    std::unordered_map<Hex, int, HexHash> fringes_map;  
+    std::unordered_map<Hex, float, HexHash> fringes_map;  
     std::vector<Node> checked;
 
     bool found_path{false};
@@ -257,7 +279,7 @@ namespace HexMath
     int cheapest_idx{0};
 
     // TODO: Update heuristic to also account for vector with smallest angle to goal
-    int h = axial_distance(start, goal);
+    float h = compute_heuristic(start, goal, start, hex_size);
     int g = 0;
     Node current_node(start, g, h, start);
     fringes.push(current_node);
@@ -287,10 +309,10 @@ namespace HexMath
           if (std::find(obstacles.begin(), obstacles.end(), neighbor) == obstacles.end())
           {
             // Check if this we've already reached this hex with equal or better cost
-            h = axial_distance(neighbor, goal);
+            h = compute_heuristic(start, goal, neighbor, hex_size);
             g = current_node.g + 1;
 
-            if (fringes_map.contains(neighbor) && (h + g) >= fringes_map[neighbor])
+            if (fringes_map.contains(neighbor) && (g + h) >= fringes_map[neighbor])
             {
               continue;
             }
