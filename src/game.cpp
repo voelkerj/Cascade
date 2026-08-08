@@ -697,12 +697,6 @@ void Cascade::Game::EndFrame()
     return;
   }
 
-  // Update all active scenes
-  for (const auto &pair : m_active_scenes)
-  {
-    GetScene<Scene>(pair.first)->Update();
-  }
-
   // Update all systems
   for (const auto& pair : m_systems)
   {

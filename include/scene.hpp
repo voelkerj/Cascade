@@ -8,13 +8,12 @@ namespace Cascade
   class Game;
 
   // Scenes are class instances that control which entities are active
-  // at any given time. They also control behavior of any user input
-  // during that scene.
+  // at any given time.
   // Generally there is only one scene at a time, but this is not a 
   // hard restriction and there can be an unlimited number of active 
   // scenes.
   // If an entity is created in the Load() function and needs to be 
-  // referenced in Update() or End(), then a TrackEntity function is
+  // referenced in End(), then a TrackEntity function is
   // provided to do this.
 
   class Scene
@@ -23,7 +22,6 @@ namespace Cascade
     Scene(Cascade::Game &cascade) : m_game(cascade) {};
 
     virtual void Load() = 0;
-    virtual void Update() = 0;
     void EndScene();
     virtual void Cleanup() = 0; // Cleanup function is called automatically when the scene is ended
 
