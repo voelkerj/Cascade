@@ -9,15 +9,19 @@ Cascade uses [SDL](https://github.com/libsdl-org/SDL), [SDL Image](https://githu
 ## Entities
 Entities are created using Cascade::Game::CreateEntity. Components can then be added to them with Cascade::Game::AddComponent.
 
-## Systems
-Cascade features "systems" which are a generalized way to do "things" within the framework. To write a system, you inherit from the base class Cascade::System and define the virtual functions Load(), Update(), and Cleanup(). You can then register the system for use using Cascade::Game::AddSystem().
+## Scenes
+Scenes manage the loading and deletion of entities from the application. Multiple scenes can be active at once, each owning their own subset of active entities. To write a scene, you inherit from the base class Cascade::Scene and define the virtual functions Load() and Cleanup(). You can then activate the scene using Cascade::Game::AddScene().
 
-**Load** is run when the system is registered.  
+Scenes also contain an EndScene() function that informs the application the scene is ending and automatically invokes the Cleanup() function.
+
+There is also a way to create references to specific entities that works between function scopes using TrackEntity() and Get Entity().
+
+**Load** is run when Cascade::Game::AddScene() is called.  
+**Cleanup** is run when Cascade::Scene::EndScene() is called.
+
+## Systems
+Systems are a generalized way to do "things" within the framework (manipulate entities, manage inputs, play sounds, etc.). To write a system, you inherit from the base class Cascade::System and define the virtual functions Load(), Update(), and Cleanup(). You can then activate the system using Cascade::Game::AddSystem().
+
+**Load** is run when Cascade::Game::AddSystem() is called.  
 **Update** is run every frame.  
 **Cleanup** is run when Cascade::Game::RemoveSystem is called.
-
-## Scenes
-
-**Scenes** also contain Load(), Update(), and Cleanup() functions. They are meant to manage loading of entities and updating based on user input.
-
-There actually isn't much of a difference in these behind the scenes, they can pretty much be used interchangeably. I'm probably going to change that.
