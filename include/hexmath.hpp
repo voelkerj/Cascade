@@ -69,7 +69,7 @@ namespace HexMath
     size_t operator()(Hex const& hex) const
     {
       // Our hash function for a hex is based on the only identifying information we
-      // actually have: it's q an r coordinates. We take the q coordinate and shift it
+      // actually have: its q an r coordinates. We take the q coordinate and shift it
       // 32 bits, so now the first 32 bits are zeros. Then we inclusive OR it with the
       // r coordinate, which is in the bottom 32 bits. This effectively merges the two
       // 32 bit q and r values into a single 64 bit number.
@@ -278,7 +278,6 @@ namespace HexMath
     int lowest_cost{0};
     int cheapest_idx{0};
 
-    // TODO: Update heuristic to also account for vector with smallest angle to goal
     float h = compute_heuristic(start, goal, start, hex_size);
     int g = 0;
     Node current_node(start, g, h, start);
@@ -352,6 +351,7 @@ namespace HexMath
       current_node = checked[idx];
     }
 
+    std::reverse(path.begin(), path.end());
     return path;
   }
 };
