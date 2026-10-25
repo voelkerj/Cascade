@@ -243,28 +243,6 @@ namespace HexMath
     }
   };
 
-  inline float compute_heuristic(Hex start, Hex goal, Hex hex, float hex_size)
-  {
-    // Compute distance Hex is from straight line
-    std::vector<float> start_WCS{0, 0};
-    std::vector<float> goal_WCS{0, 0};
-    std::vector<float> hex_WCS{0, 0};
-
-    HEX2WCS(start_WCS, hex_size, start);
-    HEX2WCS(goal_WCS, hex_size, goal);
-    HEX2WCS(hex_WCS, hex_size, hex);
-
-    float numer = abs((goal_WCS[1] - start_WCS[1]) * hex_WCS[0] - (goal_WCS[0] - start_WCS[0]) * hex_WCS[1] + goal_WCS[0] * start_WCS[1] - goal_WCS[1] * start_WCS[0]);
-    float denom = sqrt( pow(goal_WCS[1] - start_WCS[1], 2) + pow(goal_WCS[0] - start_WCS[0], 2) );
-
-    float distance_from_line = numer / denom;
-
-    // Compute axial hex distance to goal
-    int hex_distance = axial_distance(hex, goal);
-
-    return hex_distance + distance_from_line;
-  }
-
   inline std::vector<Hex> a_star_hex(Hex start, Hex goal, std::vector<Hex> obstacles, float hex_size)
   {
     Hex neighbor;
@@ -278,7 +256,7 @@ namespace HexMath
     int lowest_cost{0};
     int cheapest_idx{0};
 
-    float h = compute_heuristic(start, goal, start, hex_size);
+    float h = axial_distance(start, goal);
     int g = 0;
     Node current_node(start, g, h, start);
     fringes.push(current_node);
@@ -308,7 +286,7 @@ namespace HexMath
           if (std::find(obstacles.begin(), obstacles.end(), neighbor) == obstacles.end())
           {
             // Check if this we've already reached this hex with equal or better cost
-            h = compute_heuristic(start, goal, neighbor, hex_size);
+            h = axial_distance(neighbor, goal);
             g = current_node.g + 1;
 
             if (fringes_map.contains(neighbor) && (g + h) >= fringes_map[neighbor])
