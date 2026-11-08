@@ -10,10 +10,12 @@
 
 namespace Cascade
 {
+  class Game;
+  
   class Inputs
   {
   public:
-    Inputs() {};
+    Inputs(Cascade::Game &cascade) : m_game(cascade) {};
     ~Inputs() {};
 
     void StartFrame(entt::registry &registry, int screen_width, int screen_height);
@@ -36,6 +38,8 @@ namespace Cascade
     float m_mouse_coords[2]; // SDL coordinate system
 
   private:
+    Cascade::Game &m_game;
+
     std::map<SDL_Scancode, bool> m_pressed_keys;
     std::map<SDL_Scancode, bool> m_released_keys;
     std::map<SDL_Scancode, bool> m_held_keys;

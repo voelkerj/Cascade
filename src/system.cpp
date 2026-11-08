@@ -356,9 +356,18 @@ void Cascade::Graphics::CalculateDestinations(entt::registry &registry)
     drawing_state.destination_rect.h = ui_element.size[1];
 
     // Get destination rectangle
-    // UI Element Drawing is based on % location on screen
-    drawing_state.destination_rect.x = GetScreenWidth() * ui_element.position[0] - drawing_state.destination_rect.w / 2;
-    drawing_state.destination_rect.y = GetScreenHeight() * ui_element.position[1] - drawing_state.destination_rect.h / 2;
+    if (!ui_element.use_WCS)
+    {
+      // UI Element Drawing is based on % location on screen
+      drawing_state.destination_rect.x = GetScreenWidth() * ui_element.position[0] - drawing_state.destination_rect.w / 2;
+      drawing_state.destination_rect.y = GetScreenHeight() * ui_element.position[1] - drawing_state.destination_rect.h / 2;
+    } else {
+      point_WCS = {ui_element.position[0], ui_element.position[1]};
+      point_PCS = WCS2PCS(point_WCS);
+      point_SDL = PCS2SDL(point_PCS);
+      drawing_state.destination_rect.x = point_SDL[0];
+      drawing_state.destination_rect.y = point_SDL[1];
+    }
 
     // If we clicked and the animation is done
     if (!ui_element.click_animation_done && (drawing_state.animation_name == drawing_state.default_animation_name))
@@ -382,7 +391,7 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
 
     if (drawing_state.enable_tint)
     {
-      SDL_SetTextureColorMod(m_sprite_sheets[m_animations[drawing_state.animation_name].sprite_sheet], drawing_state.color[0], drawing_state.color[1], drawing_state.color[2]);
+      SDL_SetTextureColorMod(m_sprite_sheets[m_animations[drawing_state.animation_name].sprite_sheet], drawing_state.color.GetColor().r, drawing_state.color.GetColor().g, drawing_state.color.GetColor().b);
     }
 
     SDL_RenderTextureRotated(m_renderer, m_sprite_sheets[m_animations[drawing_state.animation_name].sprite_sheet], &clipping_rect, &drawing_state.destination_rect,
@@ -392,7 +401,7 @@ void Cascade::Graphics::DrawEntities(entt::registry &registry)
 
 void Cascade::Graphics::DrawColliders(entt::registry &registry)
 {
-  int color[4]{255, 0, 255, 255};
+  Cascade::Color color(255, 0, 255, 255);
 
   auto view = registry.view<const NonRotatingCollider, State>();
 
@@ -438,7 +447,7 @@ void Cascade::Graphics::UpdateDrawingState(DrawingState &drawing_state)
   }
 }
 
-void Cascade::Graphics::DrawLineWCS(float a[2], float b[2], int color[4])
+void Cascade::Graphics::DrawLineWCS(float a[2], float b[2], Cascade::Color color)
 {
   std::vector<float> point_PCS;
   
@@ -452,10 +461,10 @@ void Cascade::Graphics::DrawLineWCS(float a[2], float b[2], int color[4])
 
   line_segment_starts.push_back(start_SDL);
   line_segment_ends.push_back(end_SDL);
-  line_segment_colors.push_back({color[0], color[1], color[2], color[3]});
+  line_segment_colors.push_back({color.GetColor().r, color.GetColor().g, color.GetColor().b, color.GetColor().a});
 }
 
-void Cascade::Graphics::DrawLineWCS(std::vector<float> a, std::vector<float> b, int color[4])
+void Cascade::Graphics::DrawLineWCS(std::vector<float> a, std::vector<float> b, Cascade::Color color)
 {
   std::vector<float> point_PCS;
   
@@ -467,10 +476,10 @@ void Cascade::Graphics::DrawLineWCS(std::vector<float> a, std::vector<float> b, 
 
   line_segment_starts.push_back(start_SDL);
   line_segment_ends.push_back(end_SDL);
-  line_segment_colors.push_back({color[0], color[1], color[2], color[3]});
+  line_segment_colors.push_back({color.GetColor().r, color.GetColor().g, color.GetColor().b, color.GetColor().a});
 }
 
-void Cascade::Graphics::DrawCircleWCS(const std::vector<float> center, const float radius, int color[4])
+void Cascade::Graphics::DrawCircleWCS(const std::vector<float> center, const float radius, Cascade::Color color)
 {
   for (int theta = 0; theta < 360; theta += 10)
   {

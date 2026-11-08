@@ -99,9 +99,9 @@ namespace Cascade
     void DrawEntities(entt::registry &registry);
     void DrawColliders(entt::registry &registry);
     void UpdateDrawingState(DrawingState& drawing_state);
-    void DrawLineWCS(float a[2], float b[2], int color[4]);
-    void DrawLineWCS(std::vector<float> a, std::vector<float> b, int color[4]);
-    void DrawCircleWCS(const std::vector<float> center, const float radius, int color[4]);
+    void DrawLineWCS(float a[2], float b[2], Cascade::Color color);
+    void DrawLineWCS(std::vector<float> a, std::vector<float> b, Cascade::Color color);
+    void DrawCircleWCS(const std::vector<float> center, const float radius, Cascade::Color color);
 
     void UpdateUIAnimations(entt::registry &registry);
 

@@ -19,43 +19,6 @@ namespace Cascade
     float X{0}, Y{0}, VX{0}, VY{0}, AX{0}, AY{0}, ScaleX{1}, ScaleY{1}, Angle{0};
   };
 
-  // Animation and rendering state
-  struct DrawingState
-  {
-    int layer{0};
-    std::string animation_name; // string to look up the Animation
-    int frame_idx{0};
-    uint32_t prev_update_ticks{0};
-    bool enable_tint{false};
-    int color[3]{0, 0, 0};
-    int current_animation_end_behavior{0}; // 0 = loop, 1 = once
-    std::string default_animation_name;
-    SDL_FRect destination_rect;
-    float angle{0};
-    SDL_FlipMode flip{SDL_FLIP_NONE};
-  };
-
-  struct UIElement
-  {
-    float position[2]{0, 0};
-    int size[2]{0, 0};
-    float angle{0};
-    bool click_type[3]{false, false, false}; // left, middle, right
-    bool hover{false};
-    std::string hover_animation{""};
-    std::string click_animation{""};
-    bool click_animation_done{true};
-  };
-
-  struct NonRotatingCollider
-  {
-    bool static_collider{false};
-    float X{0};
-    float Y{0};
-    float width{1};
-    float height{1};
-  };
-
   // This isn't actually a component, it's just a wrapper around
   // SDL_Color, but idk where else to put it so I guess it goes here???
   class Color
@@ -112,6 +75,44 @@ namespace Cascade
     SDL_Color GetColor(){ return m_color; };
   private:
     SDL_Color m_color = {0xFF, 0xFF, 0xFF, 0x0}; // white
+  };
+
+  // Animation and rendering state
+  struct DrawingState
+  {
+    int layer{0};
+    std::string animation_name; // string to look up the Animation
+    int frame_idx{0};
+    uint32_t prev_update_ticks{0};
+    bool enable_tint{false};
+    Cascade::Color color{0, 0, 0, 0};
+    int current_animation_end_behavior{0}; // 0 = loop, 1 = once
+    std::string default_animation_name;
+    SDL_FRect destination_rect;
+    float angle{0};
+    SDL_FlipMode flip{SDL_FLIP_NONE};
+  };
+
+  struct UIElement
+  {
+    float position[2]{0, 0};
+    bool use_WCS = false; // True = position is in WCS, False = position is in screen % distance
+    int size[2]{0, 0};
+    float angle{0};
+    bool click_type[3]{false, false, false}; // left, middle, right
+    bool hover{false};
+    std::string hover_animation{""};
+    std::string click_animation{""};
+    bool click_animation_done{true};
+  };
+
+  struct NonRotatingCollider
+  {
+    bool static_collider{false};
+    float X{0};
+    float Y{0};
+    float width{1};
+    float height{1};
   };
 }
 

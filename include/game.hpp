@@ -20,7 +20,7 @@ namespace Cascade
   class Game
   {
   public:
-    Game(){};
+    Game() : m_inputs(*this) {};
     ~Game(){};
 
     void Run();
@@ -123,16 +123,16 @@ namespace Cascade
     std::string GetCurrentAnimation(entt::entity entity);
     void SetLayer(entt::entity entity, int layer){ GetSystem<Graphics>("graphics")->SetLayer(m_entt_registry, entity, layer); };
     void SortDrawingLayers();
-    void SetColor(entt::entity entity, int color[3]);
+    void SetColor(entt::entity entity, Cascade::Color color);
     void FlipHorizontal(entt::entity entity);
     void FlipVertical(entt::entity entity);
     void ResetFlipHorizontal(entt::entity entity);
     void ResetFlipVertical(entt::entity entity);
     void ResetColor(entt::entity entity);
     void SetDrawColliders(bool draw_colliders) { GetSystem<Graphics>("graphics")->SetDrawColliders(draw_colliders); }; 
-    void DrawLineWCS(float a[2], float b[2], int color[4]) { GetSystem<Graphics>("graphics")->DrawLineWCS(a, b, color); };
-    void DrawLineWCS(std::vector<float> a, std::vector<float> b, int color[4]) { GetSystem<Graphics>("graphics")->DrawLineWCS(a, b, color); };
-    void DrawCircleWCS(const std::vector<float> center, const float radius, int color[4]) { GetSystem<Graphics>("graphics")->DrawCircleWCS(center, radius, color); };
+    void DrawLineWCS(float a[2], float b[2], Cascade::Color color) { GetSystem<Graphics>("graphics")->DrawLineWCS(a, b, color); };
+    void DrawLineWCS(std::vector<float> a, std::vector<float> b, Cascade::Color color) { GetSystem<Graphics>("graphics")->DrawLineWCS(a, b, color); };
+    void DrawCircleWCS(const std::vector<float> center, const float radius, Cascade::Color color) { GetSystem<Graphics>("graphics")->DrawCircleWCS(center, radius, color); };
 
     void SetHoverAnimation(entt::entity button, std::string animation_name);
     void SetClickAnimation(entt::entity button, std::string animation_name);

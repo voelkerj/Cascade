@@ -452,13 +452,11 @@ std::string Cascade::Game::GetCurrentAnimation(entt::entity entity)
   return GetSystem<Graphics>("graphics")->GetCurrentAnimation(m_entt_registry, entity);
 }
 
-void Cascade::Game::SetColor(entt::entity entity, int color[3])
+void Cascade::Game::SetColor(entt::entity entity, Cascade::Color color)
 {
   Cascade::DrawingState& drawing_state = m_entt_registry.get<Cascade::DrawingState>(entity);
   drawing_state.enable_tint = true;
-  drawing_state.color[0] = color[0];
-  drawing_state.color[1] = color[1];
-  drawing_state.color[2] = color[2];
+  drawing_state.color = color;
 }
 
 void Cascade::Game::FlipHorizontal(entt::entity entity)

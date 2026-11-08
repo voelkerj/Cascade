@@ -1,4 +1,5 @@
-#include "inputs.hpp"
+#include "../include/inputs.hpp"
+#include "../include/game.hpp"
 
 void Cascade::Inputs::StartFrame(entt::registry &registry, int screen_width, int screen_height)
 {
@@ -55,10 +56,24 @@ void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry
 
 bool Cascade::Inputs::MouseWithinUIElement(UIElement ui_element, int screen_width, int screen_height)
 {
-  return (m_mouse_coords[0] >= ui_element.position[0] * screen_width - ui_element.size[0] / 2) && 
-    (m_mouse_coords[0] <= ui_element.position[0] * screen_width + ui_element.size[0] / 2) && 
-    (m_mouse_coords[1] >= ui_element.position[1] * screen_height - ui_element.size[1] / 2) && 
-    (m_mouse_coords[1] <= ui_element.position[1] * screen_height + ui_element.size[1] / 2);
+  if (!ui_element.use_WCS)
+  {
+    return (m_mouse_coords[0] >= ui_element.position[0] * screen_width - ui_element.size[0] / 2) &&
+           (m_mouse_coords[0] <= ui_element.position[0] * screen_width + ui_element.size[0] / 2) &&
+           (m_mouse_coords[1] >= ui_element.position[1] * screen_height - ui_element.size[1] / 2) &&
+           (m_mouse_coords[1] <= ui_element.position[1] * screen_height + ui_element.size[1] / 2);
+  }
+  else
+  {
+    std::vector<float> point_WCS = {ui_element.position[0], ui_element.position[1]};
+    std::vector<float> point_PCS = m_game.WCS2PCS(point_WCS);
+    std::vector<float> point_SDL = m_game.PCS2SDL(point_PCS);
+
+    return (m_mouse_coords[0] >= point_SDL[0]) &&
+           (m_mouse_coords[0] <= point_SDL[0] + ui_element.size[0]) &&
+           (m_mouse_coords[1] >= point_SDL[1]) &&
+           (m_mouse_coords[1] <= point_SDL[1] + ui_element.size[1]);
+  }
 }
 
 void Cascade::Inputs::UpdateUIElements(entt::registry &registry, int screen_width, int screen_height)
