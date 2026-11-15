@@ -1,5 +1,5 @@
 # Cascade
-<div align="center">*Complexity Cascades from Simplicity*</div>  
+<div align="center"><i>Complexity Cascades from Simplicity</i></div>  
 
 ## About
 Cascade is a framework making games, simulations, and other applications. It wraps around several libraries to create a common interface for drawing, playing sounds, reading input, and rendering text.
@@ -7,7 +7,7 @@ Cascade is a framework making games, simulations, and other applications. It wra
 Some demos can be found in the [Cascade Demos](https://github.com/voelkerj/Cascade-Demos) project.
 
 ## Special Thanks
-Cascade wraps the following libraries:  
+Cascade includes the following external libraries:  
 * [entt](https://github.com/skypjack/entt) for an Entity Component System (ECS)  
 * [SDL](https://github.com/libsdl-org/SDL) for window and rendering functionality
 * [SDL Image](https://github.com/libsdl-org/SDL_image) for loading images as SDL surfaces
