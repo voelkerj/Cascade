@@ -737,7 +737,7 @@ void Cascade::Game::UpdateUIAnimations()
 
 void Cascade::Game::UpdateInputEvents()
 {
-  if (SDL_PollEvent(&m_event))
+  while (SDL_PollEvent(&m_event))
   {
     if (m_event.type == SDL_EVENT_KEY_DOWN || m_event.type == SDL_EVENT_KEY_UP)
     {
