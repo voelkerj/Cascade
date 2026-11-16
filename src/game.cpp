@@ -696,10 +696,8 @@ void Cascade::Game::EndFrame()
   }
 
   // Update all systems
-  std::cout << "==============\n";
   for (const auto& system_name : m_system_update_order)
   {
-    std::cout << "Updating system: " << system_name << "\n";
     m_systems[system_name]->Update();
   }
 
