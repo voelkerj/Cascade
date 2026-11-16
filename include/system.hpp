@@ -17,10 +17,14 @@ namespace Cascade
   class System
   {
   public:
+    System() = delete;
+
     System(Cascade::Game &cascade) : m_game(cascade) {};
     virtual void Load() = 0;
     virtual void Update() = 0;
     virtual void Cleanup() = 0;
+
+    int m_priority{0};
 
     protected:
     Cascade::Game &m_game;

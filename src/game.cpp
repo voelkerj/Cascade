@@ -19,9 +19,9 @@ void Cascade::Game::Run()
   // Initialize SLD_ttf
   TTF_Init();
 
-  AddSystem<Graphics>("graphics");
-  AddSystem<Audio>("audio");
-  AddSystem<Events>("events");
+  AddSystem<Graphics>("graphics", 100000);
+  AddSystem<Audio>("audio", 99999);
+  AddSystem<Events>("events", 99998);
 
   while (Continue())
   {
@@ -696,9 +696,11 @@ void Cascade::Game::EndFrame()
   }
 
   // Update all systems
-  for (const auto& pair : m_systems)
+  std::cout << "==============\n";
+  for (const auto& system_name : m_system_update_order)
   {
-    pair.second->Update();
+    std::cout << "Updating system: " << system_name << "\n";
+    m_systems[system_name]->Update();
   }
 
   // End scenes

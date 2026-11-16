@@ -51,9 +51,22 @@ namespace Cascade
       return m_entt_registry.get<T>(entity);
     }
 
+    template <typename T>
+    T *GetSystem(std::string system_name)
+    {
+      return dynamic_cast<T *>(m_systems[system_name].get());
+    }
+
+    struct CompareSystemPriority {
+      Game& m_game;
+      bool operator()(const std::string& a, const std::string& b) const {
+        return m_game.m_systems[a]->m_priority < m_game.m_systems[b]->m_priority;
+      }
+    };
+
     // TODO: Upgrade to use concepts to check base class at compile time
     template <typename T, typename... Args>
-    void AddSystem(std::string system_name, Args... args)
+    void AddSystem(std::string system_name, int priority, Args... args)
     {
       if (!std::is_base_of<System, T>::value)
       {
@@ -62,6 +75,11 @@ namespace Cascade
       }
 
       auto new_system = m_systems.emplace(system_name, std::make_unique<T>(*this, std::forward<Args>(args)...));
+      m_systems[system_name]->m_priority = priority;
+
+      m_system_update_order.push_back(system_name);
+      std::sort(m_system_update_order.begin(), m_system_update_order.end(), CompareSystemPriority{*this});
+
       new_system.first->second->Load(); // Call the system's load function
     }
 
@@ -93,12 +111,6 @@ namespace Cascade
       }
 
       m_scenes.emplace(scene_name, std::make_unique<T>(*this, std::forward<Args>(args)...));
-    }
-
-    template <typename T>
-    T *GetSystem(std::string system_name)
-    {
-      return dynamic_cast<T *>(m_systems[system_name].get());
     }
 
     template <typename T>
@@ -194,6 +206,7 @@ namespace Cascade
     // ECS
     entt::registry m_entt_registry;
     std::map<std::string, std::unique_ptr<System>> m_systems;
+    std::vector<std::string> m_system_update_order;
 
     // SDL Stuff
     std::string m_base_path;
