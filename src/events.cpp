@@ -72,3 +72,11 @@ bool Cascade::Events::EventExists(std::string event_name)
 
   return false;
 }
+
+void Cascade::Events::ResolveIfExists(std::string event_name)
+{
+  if (EventExists(event_name))
+  {
+    ResolveEvent(event_name);
+  }
+}

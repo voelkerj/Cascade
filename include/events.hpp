@@ -25,6 +25,8 @@ namespace Cascade
 
     bool EventExists(std::string event_name);
 
+    void ResolveIfExists(std::string event_name);
+
   private:
     std::map<std::string, bool> m_events; // True = Triggered, False = Resolved
   };
