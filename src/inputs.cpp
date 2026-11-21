@@ -41,10 +41,10 @@ void Cascade::Inputs::HandleMouseEvent(SDL_Event event, entt::registry &registry
       m_middle_click = true;
     if (event.button.button == SDL_BUTTON_RIGHT)
       m_right_click = true;
+    
+    UpdateUIElements(registry, screen_width, screen_height);
   }
   if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-    UpdateUIElements(registry, screen_width, screen_height);
-
     if (event.button.button == SDL_BUTTON_LEFT)
       m_left_click = false;
     if (event.button.button == SDL_BUTTON_MIDDLE)
