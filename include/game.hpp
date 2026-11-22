@@ -52,6 +52,16 @@ namespace Cascade
     }
 
     template <typename T>
+    bool EntityHasComponent(entt::entity entity)
+    {
+      if (m_entt_registry.all_of<T>(entity))
+      {
+        return true;
+      }
+      return false;
+    }
+
+    template <typename T>
     T *GetSystem(std::string system_name)
     {
       return dynamic_cast<T *>(m_systems[system_name].get());
