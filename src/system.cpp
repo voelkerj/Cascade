@@ -176,6 +176,13 @@ void Cascade::Graphics::SetCurrentAnimation(entt::registry &registry, entt::enti
 
     drawing_state->frame_idx = 0;
 
+    // Reset prev_update_ticks so a run-once animation starts its update interval from this
+    // trigger (instead of counting from a stale timestamp)
+    if (end_behavior == 1)
+    {
+      drawing_state->prev_update_ticks = SDL_GetTicks();
+    }
+
     return;
   }
 
@@ -422,28 +429,24 @@ void Cascade::Graphics::DrawColliders(entt::registry &registry)
 void Cascade::Graphics::UpdateDrawingState(DrawingState &drawing_state)
 {
   // Get frame index based on elapsed time
-  // Only do this if there is more than one frame in this animation
-  if (m_animations[drawing_state.animation_name].frames.size() > 1)
+  Uint32 elapsed_ticks = SDL_GetTicks() - drawing_state.prev_update_ticks;
+  if (elapsed_ticks >= m_animations[drawing_state.animation_name].update_interval)
   {
-    Uint32 elapsed_ticks = SDL_GetTicks() - drawing_state.prev_update_ticks;
-    if (elapsed_ticks >= m_animations[drawing_state.animation_name].update_interval)
+    drawing_state.prev_update_ticks = SDL_GetTicks();
+    drawing_state.frame_idx++;
+  }
+
+  // Don't overrun frame vector
+  if (drawing_state.frame_idx >= m_animations[drawing_state.animation_name].frames.size())
+  {
+    // If we are only running this animation once
+    if (drawing_state.current_animation_end_behavior == 1)
     {
-      drawing_state.prev_update_ticks = SDL_GetTicks();
-      drawing_state.frame_idx++;
+      // return to previous animation
+      drawing_state.animation_name = drawing_state.default_animation_name;
     }
 
-    // Don't overrun frame vector
-    if (drawing_state.frame_idx >= m_animations[drawing_state.animation_name].frames.size())
-    {
-      // If we are only running this animation once
-      if (drawing_state.current_animation_end_behavior == 1)
-      {
-        // return to previous animation
-        drawing_state.animation_name = drawing_state.default_animation_name;
-      }
-
-      drawing_state.frame_idx = 0;
-    }
+    drawing_state.frame_idx = 0;
   }
 }
 
@@ -500,19 +503,34 @@ void Cascade::Graphics::UpdateUIAnimations(entt::registry &registry)
   for (auto [entity, ui_element] : view.each())
   {
     // Check for clicks first so we don't check hover unless we need to
-    // (click animation supercedes hover animation)
     if ((ui_element.click_type[0] ||
          ui_element.click_type[1] ||
          ui_element.click_type[2]) && !ui_element.click_animation.empty())
     {
+      ui_element.hover_animation_triggered = false;
       SetCurrentAnimation(registry, entity, ui_element.click_animation, 1);
       ui_element.click_animation_done = false;
       continue;
     }
 
-    if (ui_element.click_animation_done && ui_element.hover && !ui_element.hover_animation.empty())
+    // Hover: Loop the hover animation while the pointer is inside the button
+    if (ui_element.click_animation_done && ui_element.hover && !ui_element.hover_animation_triggered && !ui_element.hover_animation.empty())
     {
-      SetCurrentAnimation(registry, entity, ui_element.hover_animation, 1);
+      SetCurrentAnimation(registry, entity, ui_element.hover_animation, 0);
+      ui_element.hover_animation_triggered = true;
+    }
+    else if (!ui_element.hover)
+    {
+      // Revert to the default animation when the pointer leaves
+      if (ui_element.hover_animation_triggered)
+      {
+        auto drawing_state = registry.try_get<DrawingState>(entity);
+        if (drawing_state && !drawing_state->default_animation_name.empty())
+        {
+          SetCurrentAnimation(registry, entity, drawing_state->default_animation_name, 0);
+        }
+      }
+      ui_element.hover_animation_triggered = false;
     }
   }
 }

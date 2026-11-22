@@ -104,6 +104,7 @@ namespace Cascade
     std::string hover_animation{""};
     std::string click_animation{""};
     bool click_animation_done{true};
+    bool hover_animation_triggered{false}; // tracks whether the hover animation is active
   };
 
   struct NonRotatingCollider
